@@ -1,8 +1,10 @@
 :root {
+  --branco: #ffffff;
   --cinza-claro: #ebebeb;
   --cinza-escuro: #302f2f;
-  --laranja-principal: #ff6f17;
-  --laranja-secundario: #f7a26d;
+  --laranja-escuro: #ff6f17;
+  --laranja-claro: #f7a26d;
+
 }
 
 body{
@@ -11,3 +13,14 @@ body{
   margin: 0;
   padding: 0;
 }
+
+
+a{
+  text-decoration: none;
+  outline: 0;
+}
+button{
+  cursor: pointer;
+}
+
+
