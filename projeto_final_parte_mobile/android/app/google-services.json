@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "943859087430",
+    "project_id": "flutter-voluntaria-limeira-app",
+    "storage_bucket": "flutter-voluntaria-limeira-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:943859087430:android:7a712509ebd005cd6a7247",
+        "android_client_info": {
+          "package_name": "com.exa"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-Zkihow1MXgp5RLuRWN7l3tvBLQbtKks"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
