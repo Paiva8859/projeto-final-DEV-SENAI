@@ -3,6 +3,8 @@
   height: 7vh;
   display: flex;
   justify-content: center;
+  background-color: transparent;
+  z-index: 2;
 }
 
 .nav {
@@ -11,6 +13,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background-color: transparent;
+  z-index: 2;
 }
 
 .linksNavegacao {
@@ -59,5 +63,3 @@
   padding: 5px;
   text-align: center;
 }
-
-
