@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "943859087430",
-    "project_id": "flutter-voluntaria-limeira-app",
-    "storage_bucket": "flutter-voluntaria-limeira-app.firebasestorage.app"
+    "project_number": "784172088269",
+    "project_id": "projeto-final-dev-senai",
+    "storage_bucket": "projeto-final-dev-senai.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:943859087430:android:7a712509ebd005cd6a7247",
+        "mobilesdk_app_id": "1:784172088269:android:8b617b242c375a63232284",
         "android_client_info": {
           "package_name": "com.exa"
         }
@@ -15,7 +15,26 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyC-Zkihow1MXgp5RLuRWN7l3tvBLQbtKks"
+          "current_key": "AIzaSyCKwiFM_wfjheVKtvFhQ0OxrX6rX5ZctXw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:784172088269:android:b482baefec92c2ce232284",
+        "android_client_info": {
+          "package_name": "com.example.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCKwiFM_wfjheVKtvFhQ0OxrX6rX5ZctXw"
         }
       ],
       "services": {

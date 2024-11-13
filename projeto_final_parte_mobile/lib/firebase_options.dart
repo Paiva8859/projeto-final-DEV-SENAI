@@ -50,11 +50,11 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyC-Zkihow1MXgp5RLuRWN7l3tvBLQbtKks',
-    appId: '1:943859087430:android:7a712509ebd005cd6a7247',
-    messagingSenderId: '943859087430',
-    projectId: 'flutter-voluntaria-limeira-app',
-    storageBucket: 'flutter-voluntaria-limeira-app.firebasestorage.app',
+    apiKey: 'AIzaSyCKwiFM_wfjheVKtvFhQ0OxrX6rX5ZctXw',
+    appId: '1:784172088269:android:b482baefec92c2ce232284',
+    messagingSenderId: '784172088269',
+    projectId: 'projeto-final-dev-senai',
+    storageBucket: 'projeto-final-dev-senai.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
