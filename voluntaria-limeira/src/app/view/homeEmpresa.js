@@ -1,9 +1,9 @@
 import Header from "@/app/view/header";
 import style from "@/app/view/style/home.module.css";
 import MobileWeb from "./opcoes";
-import Footer from "./footer";
+import Footer from "@/app/view/footer"; // Adicione esta linha
 
-function HomeEmpresa() {
+function HomeEmpresa() {  
   return (
     <>
       <Header />
@@ -28,7 +28,7 @@ function HomeEmpresa() {
       <section className={style.paraEmpresas}>
         <h1 className={style.titulo}>Para empresas</h1>
         <hr className={style.linha} />
-        
+
         <p className={style.explicacao}>
           No mundo atual, as empresas têm um papel fundamental na transformação
           social. Ao apoiar iniciativas voluntárias, sua empresa não só
@@ -38,7 +38,7 @@ function HomeEmpresa() {
         </p>
         <MobileWeb />
       </section>
-      <Footer/>
+      <Footer />
     </>
   );
 }

@@ -1,8 +1,9 @@
 // import Header from "@/app/view/header";
-import HomeEmpresa from "./view/homeEmpresa";
+import EmpresaCadastro from "./view/empresaCadastro";
+// import HomeEmpresa from "./view/homeEmpresa";
 
 export default function Home() {
   // return (<Header/>);
-  return (<HomeEmpresa/>)
+  return (<EmpresaCadastro/>)
     
 }
