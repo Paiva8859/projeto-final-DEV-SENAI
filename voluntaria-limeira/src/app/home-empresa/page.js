@@ -1,12 +1,10 @@
-import Header from "@/app/view/header";
 import style from "@/app/view/style/home.module.css";
-import MobileWeb from "./opcoes";
-import Footer from "@/app/view/footer"; // Adicione esta linha
+import MobileWeb from "../components/opcoes";
+import Footer from "@/app/components/footer"; // Adicione esta linha
 
-function HomeEmpresa() {  
+function HomeEmpresa() {
   return (
     <>
-      <Header />
       <section className={style.apresentacao}>
         <article>
           <div className={style.introducao}>
@@ -38,7 +36,6 @@ function HomeEmpresa() {
         </p>
         <MobileWeb />
       </section>
-      <Footer />
     </>
   );
 }

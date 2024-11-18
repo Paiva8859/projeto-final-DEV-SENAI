@@ -1,9 +1,15 @@
-// import Header from "@/app/view/header";
-import EmpresaCadastro from "./view/empresaCadastro";
-// import HomeEmpresa from "./view/homeEmpresa";
+import Header from "./components/header";
+import Footer from "./components/footer";
+import HomeEmpresa from "./home-empresa/page";
 
 export default function Home() {
-  // return (<Header/>);
-  return (<EmpresaCadastro/>)
+  return (
+    <>
+      <Header />
+      <HomeEmpresa />
+      <Footer />
+    </>
+  );
     
 }
+// cadastro de usuario redirwecionar
