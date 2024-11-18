@@ -15,6 +15,22 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
   String? _errorMessage;
 
+  @override
+  void initState() {
+    super.initState();
+
+    // Verifica se já existe um usuário autenticado
+    _auth.authStateChanges().listen((User? user) {
+      if (user != null) {
+        // Se o usuário estiver autenticado, redireciona para a HomePage
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+        );
+      }
+    });
+  }
+
   // Método para autenticar o usuário
   Future<void> _login() async {
     setState(() => _isLoading = true);
@@ -38,6 +54,42 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  // Método para enviar o e-mail de redefinição de senha
+  Future<void> _resetPassword() async {
+    setState(() => _isLoading = true);
+    try {
+      await _auth.sendPasswordResetEmail(email: _emailController.text.trim());
+      setState(() {
+        _isLoading = false;
+      });
+      _showDialog('Sucesso', 'Um e-mail para redefinir sua senha foi enviado.');
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      _showDialog('Erro', e.message ?? 'Erro desconhecido');
+    }
+  }
+
+  // Método para mostrar diálogos de sucesso ou erro
+  void _showDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,8 +106,7 @@ class _LoginPageState extends State<LoginPage> {
             },
             child: const Text(
               'Registrar',
-              style:
-                  TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -108,9 +159,7 @@ class _LoginPageState extends State<LoginPage> {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: GestureDetector(
-                        onTap: () {
-                          
-                        },
+                        onTap: _resetPassword, // Chama o método de redefinir senha
                         child: const Text(
                           'Esqueceu a senha?',
                           style: TextStyle(
@@ -136,8 +185,7 @@ class _LoginPageState extends State<LoginPage> {
                         : ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.black,
-                              foregroundColor:
-                                  Colors.white,
+                              foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 50,
                                 vertical: 15,

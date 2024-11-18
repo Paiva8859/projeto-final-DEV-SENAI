@@ -12,8 +12,8 @@ void main() async {
     debugShowCheckedModeBanner: false,
     initialRoute: '/login',
     routes: {
-      '/cadastro': (context) => CadastroPage(),
       '/login': (context) => LoginPage(),
+      '/cadastro': (context) => CadastroPage(),
       '/home': (context) => HomePage(),
     },
   ));
