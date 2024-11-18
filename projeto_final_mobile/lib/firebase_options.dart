@@ -85,4 +85,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'projeto-final-dev-senai.firebasestorage.app',
     measurementId: 'G-NYGRVR9CT8',
   );
+
 }

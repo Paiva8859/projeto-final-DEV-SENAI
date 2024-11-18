@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/services.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 class CadastroPage extends StatelessWidget {
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _senhaController = TextEditingController();
-  final TextEditingController _confirmarSenhaController = TextEditingController();
+  final TextEditingController _confirmarSenhaController =
+      TextEditingController();
   final TextEditingController _telefoneController = TextEditingController();
   final TextEditingController _cpfController = TextEditingController();
 
-  // Configura o TextInputFormatter para o campo de CPF
+  // Máscara para o campo de CPF
   final maskFormatterCPF = MaskTextInputFormatter(
     mask: '###.###.###-##',
     filter: {"#": RegExp(r'[0-9]')},
@@ -46,19 +47,15 @@ class CadastroPage extends StatelessWidget {
     }
 
     try {
-      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      UserCredential userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: senha,
       );
 
       await userCredential.user?.updateDisplayName(nome);
       _showSuccessDialog(context, 'Cadastro realizado com sucesso!');
-      _nomeController.clear();
-      _emailController.clear();
-      _senhaController.clear();
-      _confirmarSenhaController.clear();
-      _telefoneController.clear();
-      _cpfController.clear();
+      _limparCampos();
     } on FirebaseAuthException catch (e) {
       String errorMessage;
       switch (e.code) {
@@ -76,8 +73,18 @@ class CadastroPage extends StatelessWidget {
       }
       _showErrorDialog(context, errorMessage);
     } catch (e) {
-      _showErrorDialog(context, 'Erro ao cadastrar. Por favor, tente novamente.');
+      _showErrorDialog(
+          context, 'Erro ao cadastrar. Por favor, tente novamente.');
     }
+  }
+
+  void _limparCampos() {
+    _nomeController.clear();
+    _emailController.clear();
+    _senhaController.clear();
+    _confirmarSenhaController.clear();
+    _telefoneController.clear();
+    _cpfController.clear();
   }
 
   void _showErrorDialog(BuildContext context, String message) {
@@ -117,8 +124,7 @@ class CadastroPage extends StatelessWidget {
 
   bool _validarCPF(String cpf) {
     cpf = cpf.replaceAll(RegExp(r'[^0-9]'), '');
-    if (cpf.length != 11) return false;
-    if (RegExp(r'^(\d)\1*$').hasMatch(cpf)) return false;
+    if (cpf.length != 11 || RegExp(r'^(\d)\1*$').hasMatch(cpf)) return false;
     return true;
   }
 
@@ -137,40 +143,31 @@ class CadastroPage extends StatelessWidget {
           children: [
             _buildTextField(_nomeController, 'Nome'),
             SizedBox(height: 15),
-            _buildTextField(_emailController, 'E-mail', keyboardType: TextInputType.emailAddress),
+            _buildTextField(_emailController, 'E-mail',
+                keyboardType: TextInputType.emailAddress),
             SizedBox(height: 15),
             _buildTextField(_senhaController, 'Senha', obscureText: true),
             SizedBox(height: 15),
-            _buildTextField(_confirmarSenhaController, 'Confirmar Senha', obscureText: true),
+            _buildTextField(_confirmarSenhaController, 'Confirmar Senha',
+                obscureText: true),
             SizedBox(height: 15),
-            _buildTextField(_telefoneController, 'Telefone', keyboardType: TextInputType.phone),
+            _buildTextField(_telefoneController, 'Telefone',
+                keyboardType: TextInputType.phone),
             SizedBox(height: 15),
-
-            // Campo de CPF com máscara
-            TextField(
-              controller: _cpfController,
-              inputFormatters: [maskFormatterCPF],
+            _buildTextField(
+              _cpfController,
+              'CPF',
               keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'CPF',
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(),
-                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
-                focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.orange)),
-              ),
+              inputFormatters: [maskFormatterCPF],
             ),
             SizedBox(height: 20),
-
             ElevatedButton(
-              onPressed: () async {
-                await _cadastrarUsuario(context);
-              },
-              child: Text('Cadastrar'),
+              onPressed: () => _cadastrarUsuario(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.black,
                 padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
               ),
+              child: Text('Cadastrar'),
             ),
           ],
         ),
@@ -178,19 +175,37 @@ class CadastroPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label,
-      {TextInputType keyboardType = TextInputType.text, bool obscureText = false}) {
-    return TextField(
-      controller: controller,
-      keyboardType: keyboardType,
-      obscureText: obscureText,
-      decoration: InputDecoration(
-        labelText: label,
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(),
-        enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
-        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.orange)),
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label, {
+    TextInputType keyboardType = TextInputType.text,
+    bool obscureText = false,
+    List<TextInputFormatter>? inputFormatters,
+  }) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 16.0),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        obscureText: obscureText,
+        inputFormatters: inputFormatters,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(color: Colors.black87),
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            borderSide: BorderSide(color: Colors.grey),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            borderSide: BorderSide(color: Colors.orange),
+          ),
+        ),
       ),
     );
   }
