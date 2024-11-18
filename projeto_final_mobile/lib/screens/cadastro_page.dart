@@ -16,6 +16,12 @@ class CadastroPage extends StatelessWidget {
     filter: {"#": RegExp(r'[0-9]')},
   );
 
+  // Configura o TextInputFormatter para o campo de Telefone
+  final maskFormatterTelefone = MaskTextInputFormatter(
+    mask: '(##) #####-####',
+    filter: {"#": RegExp(r'[0-9]')},
+  );
+
   Future<void> _cadastrarUsuario(BuildContext context) async {
     final String nome = _nomeController.text.trim();
     final String email = _emailController.text.trim();
@@ -24,32 +30,38 @@ class CadastroPage extends StatelessWidget {
     final String telefone = _telefoneController.text.trim();
     final String cpf = _cpfController.text.trim();
 
-    if (nome.isEmpty ||
-        email.isEmpty ||
-        senha.isEmpty ||
-        confirmarSenha.isEmpty ||
-        telefone.isEmpty ||
-        cpf.isEmpty) {
+    // Verificando se todos os campos estão preenchidos
+    if (nome.isEmpty || email.isEmpty || senha.isEmpty || confirmarSenha.isEmpty || telefone.isEmpty || cpf.isEmpty) {
       _showErrorDialog(context, 'Por favor, preencha todos os campos.');
       return;
     }
 
+    // Verificando se as senhas são iguais
     if (senha != confirmarSenha) {
       _showErrorDialog(context, 'As senhas não coincidem.');
       return;
     }
 
+    // Validando a senha mínima de 8 caracteres
+    if (senha.length < 8) {
+      _showErrorDialog(context, 'A senha deve ter pelo menos 8 caracteres.');
+      return;
+    }
+
+    // Verificando CPF
     if (!_validarCPF(cpf)) {
       _showErrorDialog(context, 'CPF inválido.');
       return;
     }
 
     try {
+      // Criando o usuário com o Firebase
       UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: senha,
       );
 
+      // Atualizando o nome do usuário
       await userCredential.user?.updateDisplayName(nome);
       _showSuccessDialog(context, 'Cadastro realizado com sucesso!');
       _nomeController.clear();
@@ -105,7 +117,7 @@ class CadastroPage extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              Navigator.pushReplacementNamed(context, '/login');
+              Navigator.pushReplacementNamed(context, '/login'); // Redireciona para a página de login
             },
             child: Text('OK'),
           ),
@@ -142,7 +154,21 @@ class CadastroPage extends StatelessWidget {
             SizedBox(height: 15),
             _buildTextField(_confirmarSenhaController, 'Confirmar Senha', obscureText: true),
             SizedBox(height: 15),
-            _buildTextField(_telefoneController, 'Telefone', keyboardType: TextInputType.phone),
+            
+            // Campo de telefone com máscara
+            TextField(
+              controller: _telefoneController,
+              inputFormatters: [maskFormatterTelefone],
+              keyboardType: TextInputType.phone,
+              decoration: InputDecoration(
+                labelText: 'Telefone',
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(),
+                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
+                focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.orange)),
+              ),
+            ),
             SizedBox(height: 15),
 
             // Campo de CPF com máscara
@@ -161,6 +187,7 @@ class CadastroPage extends StatelessWidget {
             ),
             SizedBox(height: 20),
 
+            // Botão para cadastrar
             ElevatedButton(
               onPressed: () async {
                 await _cadastrarUsuario(context);
@@ -169,6 +196,18 @@ class CadastroPage extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.black,
                 padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+              ),
+            ),
+            SizedBox(height: 20),
+
+            // Botão para redirecionar para a página de login
+            TextButton(
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/login');  // Navega para a página de login
+              },
+              child: Text(
+                'Já tem uma conta? Faça login.',
+                style: TextStyle(color: Colors.black),
               ),
             ),
           ],
