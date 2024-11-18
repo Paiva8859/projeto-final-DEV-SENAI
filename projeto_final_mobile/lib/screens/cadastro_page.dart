@@ -137,98 +137,116 @@ class CadastroPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Cadastro'),
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildTextField(_nomeController, 'Nome'),
-            SizedBox(height: 15),
-            _buildTextField(_emailController, 'E-mail', keyboardType: TextInputType.emailAddress),
-            SizedBox(height: 15),
-            _buildTextField(_senhaController, 'Senha', obscureText: true),
-            SizedBox(height: 15),
-            _buildTextField(_confirmarSenhaController, 'Confirmar Senha', obscureText: true),
-            SizedBox(height: 15),
-            
-            // Campo de telefone com máscara
-            TextField(
-              controller: _telefoneController,
-              inputFormatters: [maskFormatterTelefone],
-              keyboardType: TextInputType.phone,
-              decoration: InputDecoration(
-                labelText: 'Telefone',
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(),
-                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
-                focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.orange)),
-              ),
+        title: const Text('Cadastro', style: TextStyle(color: Colors.black)),
+        centerTitle: true,
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/login');
+            },
+            child: const Text(
+              'Login',
+              style:
+                  TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 15),
-
-            // Campo de CPF com máscara
-            TextField(
-              controller: _cpfController,
-              inputFormatters: [maskFormatterCPF],
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'CPF',
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(),
-                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
-                focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.orange)),
-              ),
-            ),
-            SizedBox(height: 20),
-
-            // Botão para cadastrar
-            ElevatedButton(
-              onPressed: () async {
-                await _cadastrarUsuario(context);
-              },
-              child: Text('Cadastrar'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-              ),
-            ),
-            SizedBox(height: 20),
-
-            // Botão para redirecionar para a página de login
-            TextButton(
-              onPressed: () {
-                Navigator.pushReplacementNamed(context, '/login');  // Navega para a página de login
-              },
-              child: Text(
-                'Já tem uma conta? Faça login.',
-                style: TextStyle(color: Colors.black),
-              ),
-            ),
-          ],
+          ),
+        ],
+        leading: IconButton(
+          icon: const Icon(Icons.menu, color: Colors.black),
+          onPressed: () {},
         ),
+      ),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(height: 40),
+                const Text(
+                  'Cadastro',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 40),
+                _buildTextField(_nomeController, 'Nome'),
+                const SizedBox(height: 15),
+                _buildTextField(_emailController, 'E-mail', keyboardType: TextInputType.emailAddress),
+                const SizedBox(height: 15),
+                _buildTextField(_senhaController, 'Senha', obscureText: true),
+                const SizedBox(height: 15),
+                _buildTextField(_confirmarSenhaController, 'Confirmar Senha', obscureText: true),
+                const SizedBox(height: 15),
+                _buildTextField(_telefoneController, 'Telefone', maskFormatter: maskFormatterTelefone),
+                const SizedBox(height: 15),
+                _buildTextField(_cpfController, 'CPF', maskFormatter: maskFormatterCPF),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () async {
+                    await _cadastrarUsuario(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  ),
+                  child: const Text(
+                    'Cadastrar',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(context, '/login');
+                  },
+                  child: const Text(
+                    'Já tem uma conta? Faça login.',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              height: 300,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/imagem-de-fundo(cadastro-e-login).png'),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildTextField(TextEditingController controller, String label,
-      {TextInputType keyboardType = TextInputType.text, bool obscureText = false}) {
+      {TextInputType keyboardType = TextInputType.text,
+      bool obscureText = false,
+      MaskTextInputFormatter? maskFormatter}) {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
       obscureText: obscureText,
+      inputFormatters: maskFormatter != null ? [maskFormatter] : [],
       decoration: InputDecoration(
         labelText: label,
         filled: true,
         fillColor: Colors.white,
         border: OutlineInputBorder(),
-        enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
-        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.orange)),
+        enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
+        focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.orange)),
       ),
     );
   }
