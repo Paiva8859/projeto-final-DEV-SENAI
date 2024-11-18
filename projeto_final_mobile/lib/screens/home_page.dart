@@ -1,9 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HomePage extends StatelessWidget {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  // Método para fazer logout
+  Future<void> _logout(BuildContext context) async {
+    await _auth.signOut();
+    Navigator.pushReplacementNamed(context, '/login'); // Redireciona para a página de login
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Obtém o usuário logado
+    User? user = _auth.currentUser;
+
     return Scaffold(
       // AppBar personalizada
       appBar: AppBar(
@@ -11,17 +22,15 @@ class HomePage extends StatelessWidget {
         elevation: 0,
         leading: Icon(Icons.menu, color: Colors.black),
         actions: [
+          // Exibe o nome do usuário logado, se houver
+          if (user != null)
+            TextButton(
+              onPressed: () {},
+              child: Text(user.displayName ?? 'Usuário', style: TextStyle(color: Colors.orange)),
+            ),
           TextButton(
-            onPressed: () {
-              Navigator.pushNamed(context, '/login');
-            },
-            child: Text('Entrar', style: TextStyle(color: Colors.orange)),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pushNamed(context, '/cadastro');
-            },
-            child: Text('Registrar', style: TextStyle(color: Colors.black)),
+            onPressed: () => _logout(context),
+            child: Text('Logout', style: TextStyle(color: Colors.black)),
           ),
         ],
       ),
