@@ -7,7 +7,8 @@ class HomePage extends StatelessWidget {
   // Método para fazer logout
   Future<void> _logout(BuildContext context) async {
     await _auth.signOut();
-    Navigator.pushReplacementNamed(context, '/login'); // Redireciona para a página de login
+    Navigator.pushReplacementNamed(
+        context, '/login'); // Redireciona para a página de login
   }
 
   @override
@@ -26,7 +27,8 @@ class HomePage extends StatelessWidget {
           if (user != null)
             TextButton(
               onPressed: () {},
-              child: Text(user.displayName ?? 'Usuário', style: TextStyle(color: Colors.orange)),
+              child: Text(user.displayName ?? 'Usuário',
+                  style: TextStyle(color: Colors.orange)),
             ),
           TextButton(
             onPressed: () => _logout(context),
@@ -110,28 +112,41 @@ class HomePage extends StatelessWidget {
       ),
       // Bottom Navigation Bar
       bottomNavigationBar: BottomNavigationBar(
-        items: [
+        items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Início',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.place),
-            label: 'Locais',
+            icon: Icon(Icons.task),
+            label: 'Projetos',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.emoji_events),
-            label: 'Conquistas',
+            label: 'Recompensas',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Configurações',
+            icon: Icon(Icons.person),
+            label: 'Perfil',
           ),
         ],
         selectedItemColor: Colors.orange,
         unselectedItemColor: Colors.black,
         onTap: (index) {
-          // Lógica de navegação
+          switch (index) {
+            case 0:
+              Navigator.pushNamed(context, '/home');
+              break;
+            case 1:
+              Navigator.pushNamed(context, '/projetos');
+              break;
+            case 2:
+              Navigator.pushNamed(context, '/recompensas');
+              break;
+            case 3:
+              Navigator.pushNamed(context, '/usuario');
+              break;
+          }
         },
       ),
     );
