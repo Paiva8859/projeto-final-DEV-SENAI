@@ -17,6 +17,8 @@ class HomePage extends StatelessWidget {
     User? user = _auth.currentUser;
 
     return Scaffold(
+      
+      backgroundColor: Colors.white,
       // AppBar personalizada
       appBar: AppBar(
         backgroundColor: Colors.transparent,
