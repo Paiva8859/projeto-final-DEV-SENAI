@@ -83,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: const Text('OK'),
+            child: const Text('OK'),  
           ),
         ],
       ),
@@ -93,11 +93,13 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text('Login', style: TextStyle(color: Colors.black)),
-        centerTitle: true,
+        // title: const Text('Login', style: TextStyle(color: Colors.black)),
+        // centerTitle: true,
         actions: [
           TextButton(
             onPressed: () {
@@ -106,7 +108,8 @@ class _LoginPageState extends State<LoginPage> {
             },
             child: const Text(
               'Registrar',
-              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+              style:
+                  TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -117,100 +120,99 @@ class _LoginPageState extends State<LoginPage> {
       ),
       body: Stack(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Center(
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 40),
-                    const Text(
-                      'Login',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 40),
+          SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            // top: 500.0,
+            // left: 16.0,
+            // right: 16.0,
 
-                    // Campo para e-mail
-                    TextField(
-                      controller: _emailController,
-                      decoration: const InputDecoration(
-                        labelText: 'E-mail',
-                        border: UnderlineInputBorder(),
-                      ),
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Campo para senha
-                    TextField(
-                      controller: _passwordController,
-                      decoration: const InputDecoration(
-                        labelText: 'Senha',
-                        border: UnderlineInputBorder(),
-                      ),
-                      obscureText: true,
-                    ),
-                    const SizedBox(height: 20),
-
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: GestureDetector(
-                        onTap: _resetPassword, // Chama o método de redefinir senha
-                        child: const Text(
-                          'Esqueceu a senha?',
-                          style: TextStyle(
-                            color: Colors.grey,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 40),
-
-                    // Exibir mensagem de erro, se houver
-                    if (_errorMessage != null)
-                      Text(
-                        _errorMessage!,
-                        style: const TextStyle(color: Colors.red),
-                      ),
-                    const SizedBox(height: 20),
-
-                    // Botão de login
-                    _isLoading
-                        ? const CircularProgressIndicator()
-                        : ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.black,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 50,
-                                vertical: 15,
-                              ),
-                              textStyle: const TextStyle(fontSize: 16),
-                            ),
-                            onPressed: _login,
-                            child: const Text('Entrar'),
-                          ),
-                  ],
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(height: 40),
+                const Text(
+                  'Login',
+                  style: TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Image.asset(
-              'assets/imagem-de-fundo(cadastro-e-login).png',
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: 300,
+                const SizedBox(height: 40),
+
+                // Campo para e-mail
+                TextField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(
+                    labelText: 'E-mail',
+                    border: UnderlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                const SizedBox(height: 20),
+
+                // Campo para senha
+                TextField(
+                  controller: _passwordController,
+                  decoration: const InputDecoration(
+                    labelText: 'Senha',
+                    border: UnderlineInputBorder(),
+                  ),
+                  obscureText: true,
+                ),
+                const SizedBox(height: 20),
+
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: GestureDetector(
+                    onTap: _resetPassword, // Chama o método de redefinir senha
+                    child: const Text(
+                      'Esqueceu a senha?',
+                      style: TextStyle(
+                        color: Color.fromARGB(255, 23, 92, 255),
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 40),
+
+                // Exibir mensagem de erro, se houver
+                if (_errorMessage != null)
+                  Text(
+                    _errorMessage!,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                const SizedBox(height: 20),
+
+                // Botão de login
+                _isLoading
+                    ? const CircularProgressIndicator()
+                    : ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 50,
+                            vertical: 15,
+                          ),
+                          textStyle: const TextStyle(fontSize: 16),
+                        ),
+                        onPressed: _login,
+                        child: const Text('Entrar'),
+                      ),
+              ],
             ),
           ),
         ],
       ),
-    );
+      bottomNavigationBar: 
+        
+         Image.asset(
+          'assets/imagem-de-fundo(cadastro-e-login).png', // Caminho da imagem
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: 300,
+        ),
+      );
   }
 }
