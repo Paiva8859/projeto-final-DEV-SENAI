@@ -6,7 +6,8 @@ class HomePage extends StatelessWidget {
 
   Future<void> _logout(BuildContext context) async {
     await _auth.signOut();
-    Navigator.pushReplacementNamed(context, '/login');
+    Navigator.pushReplacementNamed(
+        context, '/login'); // Redireciona para a página de login
   }
 
   @override
@@ -14,6 +15,9 @@ class HomePage extends StatelessWidget {
     User? user = _auth.currentUser;
 
     return Scaffold(
+      
+      backgroundColor: Colors.white,
+      // AppBar personalizada
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -28,132 +32,128 @@ class HomePage extends StatelessWidget {
               ),
             SizedBox(width: 10),
             TextButton(
-              onPressed: () => _logout(context),
-              child: Text(
-                "Logout",
-                style: TextStyle(color: Colors.black),
-              ),
+              onPressed: () {},
+              child: Text(user.displayName ?? 'Usuário',
+                  style: TextStyle(color: Colors.orange)),
             ),
-          ],
-        ),
+          TextButton(
+            onPressed: () => _logout(context),
+            child: Text('Logout', style: TextStyle(color: Colors.black)),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: constraints.maxHeight,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Imagem principal
+              Image.asset(
+                'assets/ilustracao.png',
+                height: 200,
+                fit: BoxFit.cover,
               ),
-              child: IntrinsicHeight(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              SizedBox(height: 20),
+              // Texto motivacional
+              RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  text: 'De ajuda em ajuda\n',
+                  style: TextStyle(
+                    fontSize: 24,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
                   children: [
-                    Image.asset(
-                      'assets/ilustracao.png',
-                      height: 200,
-                      fit: BoxFit.contain,
+                    TextSpan(
+                      text: 'o mundo se torna ',
+                      style: TextStyle(fontWeight: FontWeight.normal),
                     ),
-                    SizedBox(height: 20),
-                    RichText(
-                      textAlign: TextAlign.center,
-                      text: TextSpan(
-                        text: "De ajuda em ajuda\n",
-                        style: TextStyle(
-                          fontSize: 24,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        children: [
-                          TextSpan(
-                            text: "o mundo se torna ",
-                            style: TextStyle(fontWeight: FontWeight.normal),
-                          ),
-                          TextSpan(
-                            text: "melhor.",
-                            style: TextStyle(
-                              color: Colors.orange,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 30),
-                    Text(
-                      "Encontre Locais Próximos a você!",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    Container(
-                      height: 150,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.orange),
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: Image.asset(
-                        'assets/mapa.png',
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    Container(
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Center(
-                        child: Text(
-                          "Conteúdo adicional aqui",
-                          style: TextStyle(color: Colors.black54),
-                        ),
-                      ),
+                    TextSpan(
+                      text: 'melhor.',
+                      style: TextStyle(color: Colors.orange),
                     ),
                   ],
                 ),
               ),
-            );
-          },
-        ),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        color: Colors.white,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildFooterIcon(
-                context,
-                Icons.home,
-                "Início",
-                Colors.orange,
+              SizedBox(height: 30),
+              // Texto abaixo da imagem
+              Text(
+                'Encontre Locais Próximos a você!',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
               ),
-              _buildFooterIcon(
-                context,
-                Icons.location_on,
-                "Locais",
-                Colors.black,
+              SizedBox(height: 20),
+              // Mapa ou imagem do mapa
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.orange),
+                ),
+                child: Image.asset(
+                  'assets/mapa.png',
+                  height: 150,
+                  fit: BoxFit.cover,
+                ),
               ),
-              _buildFooterIcon(
-                context,
-                Icons.emoji_events,
-                "Conquistas",
-                Colors.black,
-              ),
-              _buildFooterIcon(
-                context,
-                Icons.settings,
-                "Configurações",
-                Colors.black,
+              SizedBox(height: 20),
+              // Espaço para inserir mais conteúdos
+              Container(
+                height: 50,
+                color: Colors.grey[300],
+                child: Center(
+                  child: Text(
+                    'Conteúdo adicional aqui',
+                    style: TextStyle(color: Colors.black54),
+                  ),
+                ),
               ),
             ],
           ),
         ),
+      ),
+      // Bottom Navigation Bar
+      bottomNavigationBar: BottomNavigationBar(
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Início',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.task),
+            label: 'Projetos',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.emoji_events),
+            label: 'Recompensas',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Perfil',
+          ),
+        ],
+        selectedItemColor: Colors.orange,
+        unselectedItemColor: Colors.black,
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Navigator.pushNamed(context, '/home');
+              break;
+            case 1:
+              Navigator.pushNamed(context, '/projetos');
+              break;
+            case 2:
+              Navigator.pushNamed(context, '/recompensas');
+              break;
+            case 3:
+              Navigator.pushNamed(context, '/usuario');
+              break;
+          }
+        },
       ),
     );
   }

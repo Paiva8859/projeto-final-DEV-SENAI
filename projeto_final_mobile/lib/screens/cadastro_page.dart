@@ -32,7 +32,12 @@ class CadastroPage extends StatelessWidget {
     final String cpf = _cpfController.text.trim();
 
     // Verificando se todos os campos estão preenchidos
-    if (nome.isEmpty || email.isEmpty || senha.isEmpty || confirmarSenha.isEmpty || telefone.isEmpty || cpf.isEmpty) {
+    if (nome.isEmpty ||
+        email.isEmpty ||
+        senha.isEmpty ||
+        confirmarSenha.isEmpty ||
+        telefone.isEmpty ||
+        cpf.isEmpty) {
       _showErrorDialog(context, 'Por favor, preencha todos os campos.');
       return;
     }
@@ -57,7 +62,8 @@ class CadastroPage extends StatelessWidget {
 
     try {
       // Criando o usuário com o Firebase
-      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      UserCredential userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: senha,
       );
@@ -123,7 +129,8 @@ class CadastroPage extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              Navigator.pushReplacementNamed(context, '/login'); // Redireciona para a página de login
+              Navigator.pushReplacementNamed(
+                  context, '/login'); // Redireciona para a página de login
             },
             child: Text('OK'),
           ),
@@ -141,11 +148,13 @@ class CadastroPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text('Cadastro', style: TextStyle(color: Colors.black)),
-        centerTitle: true,
+        // title: const Text('Cadastro', style: TextStyle(color: Colors.black)),
+        // centerTitle: true,
         actions: [
           TextButton(
             onPressed: () {
@@ -183,15 +192,19 @@ class CadastroPage extends StatelessWidget {
                 const SizedBox(height: 40),
                 _buildTextField(_nomeController, 'Nome'),
                 const SizedBox(height: 15),
-                _buildTextField(_emailController, 'E-mail', keyboardType: TextInputType.emailAddress),
+                _buildTextField(_emailController, 'E-mail',
+                    keyboardType: TextInputType.emailAddress),
                 const SizedBox(height: 15),
                 _buildTextField(_senhaController, 'Senha', obscureText: true),
                 const SizedBox(height: 15),
-                _buildTextField(_confirmarSenhaController, 'Confirmar Senha', obscureText: true),
+                _buildTextField(_confirmarSenhaController, 'Confirmar Senha',
+                    obscureText: true),
                 const SizedBox(height: 15),
-                _buildTextField(_telefoneController, 'Telefone', maskFormatter: maskFormatterTelefone),
+                _buildTextField(_telefoneController, 'Telefone',
+                    maskFormatter: maskFormatterTelefone),
                 const SizedBox(height: 15),
-                _buildTextField(_cpfController, 'CPF', maskFormatter: maskFormatterCPF),
+                _buildTextField(_cpfController, 'CPF',
+                    maskFormatter: maskFormatterCPF),
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () async {
@@ -199,7 +212,8 @@ class CadastroPage extends StatelessWidget {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 50, vertical: 15),
                   ),
                   child: const Text(
                     'Cadastrar',
@@ -219,19 +233,13 @@ class CadastroPage extends StatelessWidget {
               ],
             ),
           ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              height: 300,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/imagem-de-fundo(cadastro-e-login).png'),
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          ),
         ],
+      ),
+      bottomNavigationBar: Image.asset(
+        'assets/imagem-de-fundo(cadastro-e-login).png', // Caminho da imagem
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: 300,
       ),
     );
   }
@@ -249,9 +257,11 @@ class CadastroPage extends StatelessWidget {
         labelText: label,
         filled: true,
         fillColor: Colors.white,
-        border: OutlineInputBorder(),
-        enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
-        focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.orange)),
+        border: UnderlineInputBorder(),
+        enabledBorder: const UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.grey)),
+        focusedBorder: const OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.orange)),
       ),
     );
   }
