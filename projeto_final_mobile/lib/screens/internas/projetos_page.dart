@@ -13,6 +13,7 @@ class _ProjetosPageState extends State<ProjetosPage> {
 
   List<Map<String, dynamic>> _projetosVerificados = [];
   bool _loading = true;
+  int _selectedIndex = 1; // Adicionando o índice selecionado
 
   @override
   void initState() {
@@ -33,11 +34,9 @@ class _ProjetosPageState extends State<ProjetosPage> {
             .get();
 
         for (var projetoDoc in projetosSnapshot.docs) {
-          // Adiciona o campo "criador" com o ID do usuário (identificador do usuário)
           Map<String, dynamic> projetoData =
               projetoDoc.data() as Map<String, dynamic>;
-          projetoData['criador'] =
-              usuarioDoc.id; // Adiciona o ID do usuário como "criador"
+          projetoData['criador'] = usuarioDoc.id;
 
           tempProjetos.add(projetoData);
         }
@@ -55,10 +54,31 @@ class _ProjetosPageState extends State<ProjetosPage> {
     }
   }
 
-  // Método para logout
   Future<void> _logout(BuildContext context) async {
     await _auth.signOut();
     Navigator.pushReplacementNamed(context, '/login');
+  }
+
+  // Função chamada ao clicar no item da BottomNavigationBar
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    switch (index) {
+      case 0:
+        Navigator.pushNamed(context, '/home');
+        break;
+      case 1:
+        Navigator.pushNamed(context, '/projetos');
+        break;
+      case 2:
+        Navigator.pushNamed(context, '/recompensas');
+        break;
+      case 3:
+        Navigator.pushNamed(context, '/usuario');
+        break;
+    }
   }
 
   @override
@@ -66,95 +86,125 @@ class _ProjetosPageState extends State<ProjetosPage> {
     User? user = _auth.currentUser;
 
     return Scaffold(
-      // AppBar personalizada
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
+        title: const Text(
+          'Projetos',
+          style: TextStyle(color: Colors.black),
+        ),
+        centerTitle: true,
+        actions: [
+          if (user != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, '/usuario');
+                },
+                child: CircleAvatar(
+                  backgroundColor: Colors.orange.shade400,
+                  child: Text(
+                    user.displayName?.substring(0, 1).toUpperCase() ?? 'U',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            ),
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black),
+            onPressed: () => _logout(context),
+          ),
+        ],
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
             Navigator.pushNamed(context, '/home');
           },
         ),
-        actions: [
-          if (user != null)
-            TextButton(
-              onPressed: () {},
-              child: Text(user.displayName ?? 'Usuário',
-                  style: TextStyle(color: Colors.orange)),
+      ),
+      body: Stack(
+        children: [
+          if (_loading)
+            const Center(child: CircularProgressIndicator())
+          else if (_projetosVerificados.isEmpty)
+            const Center(
+              child: Text(
+                'Nenhum projeto verificado encontrado.',
+                style: TextStyle(fontSize: 18),
+              ),
+            )
+          else
+            SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  ..._projetosVerificados.map((projeto) {
+                    final isVaquinha = projeto['vaquinha'] ?? false;
+                    final localOuValorLabel = isVaquinha ? 'Valor' : 'Local';
+                    final localOuValor =
+                        projeto['localOuValor'] ?? 'Não especificado';
+
+                    return Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15.0),
+                      ),
+                      margin: const EdgeInsets.symmetric(vertical: 10),
+                      elevation: 5,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              projeto['nome'] ?? 'Título do Projeto',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text('Criador: ${projeto['criador']}'),
+                            const SizedBox(height: 8),
+                            Text('$localOuValorLabel: $localOuValor'),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Descrição: ${projeto['descricao'] ?? 'Sem descrição'}',
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 12),
+                            ElevatedButton(
+                              onPressed: () {
+                                // Ação ao clicar
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.black,
+                                foregroundColor: Colors.white,
+                              ),
+                              child: Text(
+                                  isVaquinha ? 'Fazer uma Doação' : 'Inscrever-se'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
-          TextButton(
-            onPressed: () => _logout(context),
-            child: Text('Logout', style: TextStyle(color: Colors.black)),
-          ),
         ],
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _projetosVerificados.isEmpty
-              ? const Center(
-                  child: Text('Nenhum projeto verificado encontrado.'))
-              : Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: ListView.builder(
-                    padding: const EdgeInsets.only(bottom: 80.0),
-                    itemCount: _projetosVerificados.length,
-                    itemBuilder: (context, index) {
-                      final projeto = _projetosVerificados[index];
-                      final isVaquinha = projeto['vaquinha'] ?? false;
-
-                      // Determinar se deve exibir "Local" ou "Valor"
-                      final localOuValorLabel = isVaquinha ? 'Valor' : 'Local';
-                      final localOuValor =
-                          projeto['localOuValor'] ?? 'Não especificado';
-
-                      return Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15.0),
-                        ),
-                        margin: const EdgeInsets.symmetric(vertical: 10),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                projeto['nome'] ?? 'Título do Projeto',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                  'Criador: ${projeto['criador'] ?? 'Desconhecido'}'),
-                              const SizedBox(height: 8),
-                              Text('$localOuValorLabel: $localOuValor'),
-                              const SizedBox(height: 8),
-                              Text(
-                                  'Descrição: ${projeto['descricao'] ?? 'Sem descrição'}'),
-                              const SizedBox(height: 10),
-                              ElevatedButton(
-                                onPressed: () {
-                                  // Lógica para inscrição ou doação
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.black,
-                                  foregroundColor: Colors.white,
-                                ),
-                                child: Text(isVaquinha
-                                    ? 'Fazer uma Doação'
-                                    : 'Inscrever-se'),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-      // Bottom Navigation Bar
       bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex, // Define o índice selecionado
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Colors.orange,
+        unselectedItemColor: Colors.black,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -173,24 +223,7 @@ class _ProjetosPageState extends State<ProjetosPage> {
             label: 'Perfil',
           ),
         ],
-        selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.black,
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              Navigator.pushNamed(context, '/home');
-              break;
-            case 1:
-              Navigator.pushNamed(context, '/projetos');
-              break;
-            case 2:
-              Navigator.pushNamed(context, '/recompensas');
-              break;
-            case 3:
-              Navigator.pushNamed(context, '/usuario');
-              break;
-          }
-        },
+        onTap: _onItemTapped, // Chama a função quando o item é clicado
       ),
     );
   }

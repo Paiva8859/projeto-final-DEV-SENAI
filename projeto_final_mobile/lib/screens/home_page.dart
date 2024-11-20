@@ -1,13 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  int _selectedIndex = 0; // Índice da página atual
 
   Future<void> _logout(BuildContext context) async {
     await _auth.signOut();
-    Navigator.pushReplacementNamed(
-        context, '/login'); // Redireciona para a página de login
+    Navigator.pushReplacementNamed(context, '/login');
+  }
+
+  // Função chamada quando o usuário clica em um item da barra de navegação inferior
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    switch (index) {
+      case 0:
+        Navigator.pushNamed(context, '/home');
+        break;
+      case 1:
+        Navigator.pushNamed(context, '/projetos');
+        break;
+      case 2:
+        Navigator.pushNamed(context, '/recompensas');
+        break;
+      case 3:
+        Navigator.pushNamed(context, '/usuario');
+        break;
+    }
   }
 
   @override
@@ -15,50 +42,65 @@ class HomePage extends StatelessWidget {
     User? user = _auth.currentUser;
 
     return Scaffold(
-      
       backgroundColor: Colors.white,
-      // AppBar personalizada
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         automaticallyImplyLeading: false,
         title: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             if (user != null)
               Text(
                 user.displayName ?? "Nome",
-                style: TextStyle(color: Colors.orange, fontSize: 16),
+                style: const TextStyle(color: Colors.orange, fontSize: 16),
               ),
-            SizedBox(width: 10),
             TextButton(
-              onPressed: () {},
-              child: Text(user.displayName ?? 'Usuário',
-                  style: TextStyle(color: Colors.orange)),
+              onPressed: () => _logout(context),
+              child: const Text(
+                'Logout',
+                style: TextStyle(color: Colors.black, fontSize: 16),
+              ),
             ),
-          TextButton(
-            onPressed: () => _logout(context),
-            child: Text('Logout', style: TextStyle(color: Colors.black)),
-          ),
-        ],
+          ],
+        ),
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Imagem principal
-              Image.asset(
-                'assets/ilustracao.png',
-                height: 200,
-                fit: BoxFit.cover,
+              Stack(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    height: 300,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      image: const DecorationImage(
+                        image: AssetImage(
+                            'assets/imagem_de_fundo(paginas-internas).png'),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  Positioned.fill(
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Image.asset(
+                        'assets/imagem_familia.png',
+                        height: 200,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(height: 20),
-              // Texto motivacional
+              const SizedBox(height: 20),
               RichText(
                 textAlign: TextAlign.center,
-                text: TextSpan(
+                text: const TextSpan(
                   text: 'De ajuda em ajuda\n',
                   style: TextStyle(
                     fontSize: 24,
@@ -77,9 +119,8 @@ class HomePage extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(height: 30),
-              // Texto abaixo da imagem
-              Text(
+              const SizedBox(height: 30),
+              const Text(
                 'Encontre Locais Próximos a você!',
                 style: TextStyle(
                   fontSize: 18,
@@ -87,25 +128,70 @@ class HomePage extends StatelessWidget {
                   color: Colors.black,
                 ),
               ),
-              SizedBox(height: 20),
-              // Mapa ou imagem do mapa
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.orange),
-                ),
-                child: Image.asset(
-                  'assets/mapa.png',
-                  height: 150,
-                  fit: BoxFit.cover,
-                ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(15),
+                        child: Image.asset(
+                          'assets/mapa.png',
+                          height: 180,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: SizedBox(
+                      height: 120,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Positioned(
+                            top: 0,
+                            left: 40,
+                            child: Container(
+                              width: 43.84,
+                              height: 58.45,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(15),
+                                image: const DecorationImage(
+                                  image: AssetImage('assets/icone_gps.png'),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            top: 50,
+                            left: 10,
+                            child: Image.asset(
+                              'assets/imagem_celular.png',
+                              width: 113,
+                              height: 40,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(height: 20),
-              // Espaço para inserir mais conteúdos
+              const SizedBox(height: 30),
               Container(
                 height: 50,
-                color: Colors.grey[300],
-                child: Center(
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Center(
                   child: Text(
                     'Conteúdo adicional aqui',
                     style: TextStyle(color: Colors.black54),
@@ -116,8 +202,13 @@ class HomePage extends StatelessWidget {
           ),
         ),
       ),
-      // Bottom Navigation Bar
       bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex, // Define o índice selecionado
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Colors.orange,
+        unselectedItemColor: Colors.black,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -136,40 +227,8 @@ class HomePage extends StatelessWidget {
             label: 'Perfil',
           ),
         ],
-        selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.black,
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              Navigator.pushNamed(context, '/home');
-              break;
-            case 1:
-              Navigator.pushNamed(context, '/projetos');
-              break;
-            case 2:
-              Navigator.pushNamed(context, '/recompensas');
-              break;
-            case 3:
-              Navigator.pushNamed(context, '/usuario');
-              break;
-          }
-        },
+        onTap: _onItemTapped, // Chama a função quando o item é clicado
       ),
-    );
-  }
-
-  Widget _buildFooterIcon(
-      BuildContext context, IconData icon, String label, Color color) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 30, color: color),
-        SizedBox(height: 5),
-        Text(
-          label,
-          style: TextStyle(fontSize: 12, color: color),
-        ),
-      ],
     );
   }
 }

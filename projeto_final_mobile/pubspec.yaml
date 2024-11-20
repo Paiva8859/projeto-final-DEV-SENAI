@@ -68,8 +68,11 @@ flutter:
     - assets/icone_pasta.png
     - assets/icone_trofeu.png
     - assets/icone_engrenagem.png
-    - assets/ilustracao.png
+    - assets/imagem_familia.png
     - assets/mapa.png
+    - assets/imagem_de_fundo(paginas-internas).png
+    - assets/imagem_celular.png
+    - assets/icone_gps.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
