@@ -73,33 +73,30 @@ class _ProjetoCadastroPageState extends State<ProjetoCadastroPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Obtém o usuário logado
     User? user = _auth.currentUser;
-
+    
     return Scaffold(
-      // AppBar personalizada
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pushNamed(context, '/home');
-          },
-        ),
-        actions: [
-          // Exibe o nome do usuário logado, se houver
-          if (user != null)
+        automaticallyImplyLeading: false,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            if (user != null)
+              Text(
+                user.displayName ?? "Nome",
+                style: const TextStyle(color: Colors.orange, fontSize: 16),
+              ),
             TextButton(
-              onPressed: () {},
-              child: Text(user.displayName ?? 'Usuário',
-                  style: TextStyle(color: Colors.orange)),
+              onPressed: () => _logout(context),
+              child: const Text(
+                'Logout',
+                style: TextStyle(color: Colors.black, fontSize: 16),
+              ),
             ),
-          TextButton(
-            onPressed: () => _logout(context),
-            child: Text('Logout', style: TextStyle(color: Colors.black)),
-          ),
-        ],
+          ],
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

@@ -10,12 +10,14 @@ class UsuarioPage extends StatefulWidget {
 class _UsuarioPageState extends State<UsuarioPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  int _selectedIndex = 2; // Definir o índice da Recompensas como selecionado
+  int _selectedIndex = 3;
 
   User? _currentUser;
   Map<String, dynamic>? _userData;
   List<Map<String, dynamic>> _missoes = [];
   List<Map<String, dynamic>> _projetos = [];
+  List<Map<String, dynamic>> _projetosInscritos =
+      []; // Lista para os projetos inscritos
   bool _loading = true;
 
   void _onItemTapped(int index) {
@@ -36,6 +38,13 @@ class _UsuarioPageState extends State<UsuarioPage> {
         Navigator.pushNamed(context, '/usuario');
         break;
     }
+  }
+
+  // Método para fazer logout
+  Future<void> _logout(BuildContext context) async {
+    await _auth.signOut();
+    Navigator.pushReplacementNamed(
+        context, '/login'); // Redireciona para a página de login
   }
 
   Future<void> _fetchUserData() async {
@@ -84,6 +93,12 @@ class _UsuarioPageState extends State<UsuarioPage> {
         }
       }
 
+      // Carregando os projetos inscritos
+      setState(() {
+        _projetosInscritos = tempInscricoes;
+      });
+
+      // Carregando os projetos do usuário
       QuerySnapshot projetosSnapshot = await _firestore
           .collection('Usuarios')
           .doc(nomeUsuario)
@@ -127,7 +142,7 @@ class _UsuarioPageState extends State<UsuarioPage> {
               style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.deepPurple),
+                  color: Colors.orange),
             ),
             const SizedBox(height: 12),
             Row(
@@ -161,7 +176,7 @@ class _UsuarioPageState extends State<UsuarioPage> {
                   Navigator.pushNamed(context, '/editarUsuario');
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple,
+                  backgroundColor: Colors.orange,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -171,6 +186,52 @@ class _UsuarioPageState extends State<UsuarioPage> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProjetoInscritoCard(Map<String, dynamic> projeto) {
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      elevation: 5,
+      child: InkWell(
+        onTap: () {},
+        borderRadius: BorderRadius.circular(12.0),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                projeto['nome'] ?? 'Projeto sem nome',
+                style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.orange),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                projeto['descricao'] ?? 'Sem descrição',
+                style: TextStyle(fontSize: 18, color: Colors.black87),
+              ),
+              const SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text('Acessar Projeto'),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -196,7 +257,7 @@ class _UsuarioPageState extends State<UsuarioPage> {
                 style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Colors.deepPurple),
+                    color: Colors.orange),
               ),
               const SizedBox(height: 8),
               Text(
@@ -238,7 +299,7 @@ class _UsuarioPageState extends State<UsuarioPage> {
                 style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Colors.deepPurple),
+                    color: Colors.orange),
               ),
               const SizedBox(height: 8),
               Text(
@@ -249,13 +310,13 @@ class _UsuarioPageState extends State<UsuarioPage> {
               ElevatedButton(
                 onPressed: () {},
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple,
+                  backgroundColor: Colors.orange,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: const Text('Editar Projeto'),
+                child: const Text('Acessar Projeto'),
               ),
             ],
           ),
@@ -264,77 +325,131 @@ class _UsuarioPageState extends State<UsuarioPage> {
     );
   }
 
-  Future<void> _logout(BuildContext context) async {
-    await _auth.signOut();
-    Navigator.pushReplacementNamed(context, '/login');
-  }
-
   @override
   void initState() {
     super.initState();
     _currentUser = _auth.currentUser;
-    if (_currentUser != null) {
-      _fetchUserData();
-    }
+    _fetchUserData();
   }
 
   @override
   Widget build(BuildContext context) {
+    User? user = _auth.currentUser;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.deepPurple,
-        title: const Text('Usuário'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.exit_to_app),
-            onPressed: () => _logout(context),
-          ),
-        ],
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            if (user != null)
+              Text(
+                user.displayName ?? "Nome",
+                style: const TextStyle(color: Colors.orange, fontSize: 16),
+              ),
+            TextButton(
+              onPressed: () => _logout(context),
+              child: const Text(
+                'Logout',
+                style: TextStyle(color: Colors.black, fontSize: 16),
+              ),
+            ),
+          ],
+        ),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildUserInfoSection(),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Missões em andamento:',
-                    style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.deepPurple),
+          : Stack(
+              children: [
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Image.asset(
+                    'assets/imagem-de-fundo(cadastro-e-login).png', // Caminho da imagem
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: 300,
                   ),
-                  const SizedBox(height: 8),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _missoes.length,
-                    itemBuilder: (context, index) {
-                      return _buildMissaoCard(_missoes[index]);
-                    },
+                ),
+                SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildUserInfoSection(),
+                        const SizedBox(height: 20),
+                        const Text(
+                          'Missões disponíveis:',
+                          style: TextStyle(
+                              fontSize: 24, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 12),
+                        GridView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 16.0,
+                            mainAxisSpacing: 16.0,
+                          ),
+                          itemCount: _missoes.length,
+                          itemBuilder: (context, index) {
+                            return _buildMissaoCard(_missoes[index]);
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                        const Text(
+                          'Projetos Inscritos:',
+                          style: TextStyle(
+                              fontSize: 24, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 12),
+                        GridView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 16.0,
+                            mainAxisSpacing: 16.0,
+                          ),
+                          itemCount: _projetosInscritos.length,
+                          itemBuilder: (context, index) {
+                            return _buildProjetoInscritoCard(
+                                _projetosInscritos[index]);
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                        const Text(
+                          'Seus Projetos:',
+                          style: TextStyle(
+                              fontSize: 24, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 12),
+                        GridView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 16.0,
+                            mainAxisSpacing: 16.0,
+                          ),
+                          itemCount: _projetos.length,
+                          itemBuilder: (context, index) {
+                            return _buildProjetoCard(_projetos[index]);
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Projetos inscritos:',
-                    style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.deepPurple),
-                  ),
-                  const SizedBox(height: 8),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _projetos.length,
-                    itemBuilder: (context, index) {
-                      return _buildProjetoCard(_projetos[index]);
-                    },
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex, // Define o índice selecionado

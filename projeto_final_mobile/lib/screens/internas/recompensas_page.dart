@@ -123,71 +123,93 @@ class _RecompensasPageState extends State<RecompensasPage> {
   @override
   Widget build(BuildContext context) {
     int crossAxisCount = MediaQuery.of(context).size.width > 600 ? 3 : 2;
+    User? user = _auth.currentUser;
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          if (_currentUser != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: CircleAvatar(
-                backgroundColor: Colors.orange.shade400,
-                child: Text(
-                  _currentUser!.displayName?.substring(0, 1).toUpperCase() ?? 'U',
-                  style: const TextStyle(color: Colors.white),
-                ),
+        automaticallyImplyLeading: false,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            if (user != null)
+              Text(
+                user.displayName ?? "Nome",
+                style: const TextStyle(color: Colors.orange, fontSize: 16),
+              ),
+            TextButton(
+              onPressed: () => _logout(context),
+              child: const Text(
+                'Logout',
+                style: TextStyle(color: Colors.black, fontSize: 16),
               ),
             ),
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.black),
-            onPressed: () => _logout(context),
-          ),
-        ],
+          ],
+        ),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Recompensas Coletadas',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+          : Stack(
+              children: [
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Image.asset(
+                    'assets/imagem-de-fundo(cadastro-e-login).png', // Caminho da imagem
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: 300,
                   ),
-                  const SizedBox(height: 16),
-                  if (_recompensas.isEmpty)
-                    const Center(
-                      child: Text(
-                        'Nenhuma recompensa coletada ainda!',
-                        style: TextStyle(color: Colors.black54),
+                ),
+                // Usando Expanded para garantir que o corpo ocupe o restante do espaço
+                Column(
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Recompensas Coletadas',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            if (_recompensas.isEmpty)
+                              const Center(
+                                child: Text(
+                                  'Nenhuma recompensa coletada ainda!',
+                                  style: TextStyle(color: Colors.black54),
+                                ),
+                              ),
+                            GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: crossAxisCount,
+                                crossAxisSpacing: 16.0,
+                                mainAxisSpacing: 16.0,
+                                childAspectRatio: 0.9,
+                              ),
+                              itemCount: _recompensas.length,
+                              itemBuilder: (context, index) {
+                                return _buildRecompensaCard(
+                                    _recompensas[index]);
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  Expanded(
-                    child: GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossAxisCount,
-                        crossAxisSpacing: 16.0,
-                        mainAxisSpacing: 16.0,
-                        childAspectRatio: 0.9,
-                      ),
-                      itemCount: _recompensas.length,
-                      itemBuilder: (context, index) {
-                        return _buildRecompensaCard(_recompensas[index]);
-                      },
-                    ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              ],
             ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex, // Define o índice selecionado
