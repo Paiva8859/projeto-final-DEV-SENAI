@@ -10,12 +10,33 @@ class UsuarioPage extends StatefulWidget {
 class _UsuarioPageState extends State<UsuarioPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  int _selectedIndex = 2; // Definir o índice da Recompensas como selecionado
 
   User? _currentUser;
   Map<String, dynamic>? _userData;
   List<Map<String, dynamic>> _missoes = [];
   List<Map<String, dynamic>> _projetos = [];
   bool _loading = true;
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    switch (index) {
+      case 0:
+        Navigator.pushNamed(context, '/home');
+        break;
+      case 1:
+        Navigator.pushNamed(context, '/projetos');
+        break;
+      case 2:
+        Navigator.pushNamed(context, '/recompensas');
+        break;
+      case 3:
+        Navigator.pushNamed(context, '/usuario');
+        break;
+    }
+  }
 
   Future<void> _fetchUserData() async {
     try {
@@ -104,26 +125,31 @@ class _UsuarioPageState extends State<UsuarioPage> {
             Text(
               _userData?['nome'] ?? 'Nome de usuário',
               style: const TextStyle(
-                fontSize: 24, fontWeight: FontWeight.bold, color: Colors.deepPurple),
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepPurple),
             ),
             const SizedBox(height: 12),
             Row(
               children: [
-                const Text('Email: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('Email: ',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 Text(_userData?['email'] ?? 'Não especificado'),
               ],
             ),
             const SizedBox(height: 8),
             Row(
               children: [
-                const Text('CPF: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('CPF: ',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 Text(_userData?['cpf'] ?? 'Não especificado'),
               ],
             ),
             const SizedBox(height: 8),
             Row(
               children: [
-                const Text('Telefone: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('Telefone: ',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 Text(_userData?['telefone'] ?? 'Não especificado'),
               ],
             ),
@@ -168,7 +194,9 @@ class _UsuarioPageState extends State<UsuarioPage> {
               Text(
                 missao['tituloMissao'] ?? 'Missão sem título',
                 style: TextStyle(
-                    fontSize: 22, fontWeight: FontWeight.bold, color: Colors.deepPurple),
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.deepPurple),
               ),
               const SizedBox(height: 8),
               Text(
@@ -179,7 +207,9 @@ class _UsuarioPageState extends State<UsuarioPage> {
               Text(
                 'Recompensa: ${missao['recompensa'] ?? 'Sem recompensa'}',
                 style: TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green),
               ),
             ],
           ),
@@ -272,7 +302,10 @@ class _UsuarioPageState extends State<UsuarioPage> {
                   const SizedBox(height: 16),
                   Text(
                     'Missões em andamento:',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.deepPurple),
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple),
                   ),
                   const SizedBox(height: 8),
                   ListView.builder(
@@ -286,7 +319,10 @@ class _UsuarioPageState extends State<UsuarioPage> {
                   const SizedBox(height: 16),
                   Text(
                     'Projetos inscritos:',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.deepPurple),
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple),
                   ),
                   const SizedBox(height: 8),
                   ListView.builder(
@@ -300,6 +336,33 @@ class _UsuarioPageState extends State<UsuarioPage> {
                 ],
               ),
             ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex, // Define o índice selecionado
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Colors.orange,
+        unselectedItemColor: Colors.black,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Início',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.task),
+            label: 'Projetos',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.emoji_events),
+            label: 'Recompensas',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Perfil',
+          ),
+        ],
+        onTap: _onItemTapped, // Chama a função quando o item é clicado
+      ),
     );
   }
 }
