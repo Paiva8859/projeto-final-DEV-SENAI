@@ -10,7 +10,7 @@ class UsuarioPage extends StatefulWidget {
 class _UsuarioPageState extends State<UsuarioPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  int _selectedIndex = 2; // Definir o índice da Recompensas como selecionado
+  int _selectedIndex = 3; // Definir o índice da Recompensas como selecionado
 
   User? _currentUser;
   Map<String, dynamic>? _userData;
