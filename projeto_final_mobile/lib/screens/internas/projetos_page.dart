@@ -198,6 +198,14 @@ class _ProjetosPageState extends State<ProjetosPage> {
             ),
         ],
       ),
+      // Botão Criar Projeto
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(context, '/cadastro-projetos'); // Rota para a página de criação de projeto
+        },
+        backgroundColor: Colors.orange,
+        child: const Icon(Icons.add),
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex, // Define o índice selecionado
         type: BottomNavigationBarType.fixed,
