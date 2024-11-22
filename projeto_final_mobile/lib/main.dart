@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:projeto_final_mobile/screens/cadastro_page.dart';
 import 'package:projeto_final_mobile/screens/home_page.dart';
 import 'package:projeto_final_mobile/screens/internas/cadastro_projetos_page.dart';
+import 'package:projeto_final_mobile/screens/internas/editar_usuario_page.dart';
 import 'package:projeto_final_mobile/screens/internas/projetos_page.dart';
 import 'package:projeto_final_mobile/screens/internas/recompensas_page.dart';
 import 'package:projeto_final_mobile/screens/internas/usuario_page.dart';
@@ -23,6 +24,7 @@ void main() async {
       '/projetos': (context) => ProjetosPage(),
       '/usuario': (context) => UsuarioPage(),
       '/recompensas': (context) => RecompensasPage(),
+       '/editarUsuario': (context) => EditarUsuarioPage(),
     },
   ));
 }

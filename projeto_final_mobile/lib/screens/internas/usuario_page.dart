@@ -40,6 +40,27 @@ class _UsuarioPageState extends State<UsuarioPage> {
     }
   }
 
+  // Enviar email de verificação de email
+  Future<void> _enviarEmailVerificacao() async {
+    try {
+      if (_currentUser != null && !_currentUser!.emailVerified) {
+        await _currentUser!.sendEmailVerification();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  'Para continuar com essa ação verifique seu Email. \nE-mail de verificação enviado. Verifique sua caixa de entrada.')),
+        );
+      }
+    } catch (e) {
+      print('Erro ao enviar e-mail de verificação: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(
+                'Para continuar com essa ação verifique seu Email. \nErro ao enviar e-mail de verificação.')),
+      );
+    }
+  }
+
   // Método para fazer logout
   Future<void> _logout(BuildContext context) async {
     await _auth.signOut();
@@ -172,8 +193,17 @@ class _UsuarioPageState extends State<UsuarioPage> {
             Align(
               alignment: Alignment.centerRight,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/editarUsuario');
+                onPressed: () async {
+                  await FirebaseAuth.instance.currentUser
+                      ?.reload(); // Recarregar dados do usuário
+                  User? updatedUser = FirebaseAuth.instance.currentUser;
+
+                  if (updatedUser != null && updatedUser.emailVerified) {
+                    // Redirecionar para a página de edição se o e-mail agora estiver verificado
+                    Navigator.pushNamed(context, '/editarUsuario');
+                  } else {
+                    _enviarEmailVerificacao();
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
