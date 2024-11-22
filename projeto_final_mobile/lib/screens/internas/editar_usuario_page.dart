@@ -18,6 +18,7 @@ class _EditarUsuarioPageState extends State<EditarUsuarioPage> {
 
   User? _currentUser;
   bool _loading = true;
+  bool _emailVerificado = false;
 
   Future<void> _fetchUserData() async {
     try {
@@ -46,6 +47,53 @@ class _EditarUsuarioPageState extends State<EditarUsuarioPage> {
     }
   }
 
+  // Função para enviar o e-mail de verificação para o novo e-mail
+  Future<void> _enviarEmailVerificacaoNovoEmail(String novoEmail) async {
+    try {
+      if (_currentUser != null) {
+        // Envia um e-mail de verificação para o novo e-mail antes de atualizá-lo
+        await _currentUser?.verifyBeforeUpdateEmail(novoEmail);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  'E-mail de verificação enviado para $novoEmail. Verifique sua caixa de entrada antes de continuar.')),
+        );
+
+        // Monitorar o estado de verificação do e-mail
+        _monitorarVerificacaoEmail();
+      }
+    } catch (e) {
+      print('Erro ao enviar e-mail de verificação para o novo e-mail: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(
+                'Erro ao enviar e-mail de verificação para o novo e-mail.')),
+      );
+    }
+  }
+
+  // Função para monitorar a verificação do e-mail
+  void _monitorarVerificacaoEmail() {
+    _auth.userChanges().listen((user) {
+      if (user != null && user.emailVerified) {
+        setState(() {
+          _emailVerificado = true;
+        });
+        // Chama a função para finalizar a atualização após a verificação
+        _finalizarAtualizacao();
+      }
+    });
+  }
+
+  // Finalizar a atualização após a verificação do e-mail
+  void _finalizarAtualizacao() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Dados atualizados com sucesso!')),
+    );
+    Navigator.pop(context);
+  }
+
   Future<void> _salvarAlteracoes() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -59,19 +107,79 @@ class _EditarUsuarioPageState extends State<EditarUsuarioPage> {
         'email': _emailController.text.trim(),
       });
 
-      // Atualizar o e-mail no Firebase Authentication
-      await _currentUser?.updateEmail(_emailController.text.trim());
+      // Verifique se o novo e-mail precisa ser atualizado
+      String novoEmail = _emailController.text.trim();
+      if (novoEmail != _currentUser?.email) {
+        // Reautenticar o usuário antes de atualizar o e-mail
+        await _reautenticarUsuario(context);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Dados atualizados com sucesso!')),
-      );
-      Navigator.pop(context);
+        // Enviar email de verificação para o novo e-mail
+        await _enviarEmailVerificacaoNovoEmail(novoEmail);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Dados atualizados com sucesso!')),
+        );
+        Navigator.pop(context);
+      }
     } catch (e) {
       print('Erro ao salvar alterações: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro ao salvar alterações.')),
       );
     }
+  }
+
+  Future<void> _reautenticarUsuario(BuildContext context) async {
+    // Solicita a senha do usuário para reautenticação
+    String? senha = await _showPasswordDialog(context);
+
+    if (senha != null && senha.isNotEmpty) {
+      try {
+        // Cria as credenciais do usuário com o e-mail e a senha fornecidos
+        AuthCredential credential = EmailAuthProvider.credential(
+          email: _currentUser!.email!,
+          password: senha,
+        );
+
+        // Reautentica o usuário
+        await _currentUser!.reauthenticateWithCredential(credential);
+      } catch (e) {
+        print('Erro na reautenticação: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro na reautenticação.')),
+        );
+      }
+    }
+  }
+
+  // Exibe um diálogo para o usuário inserir a senha para reautenticação
+  Future<String?> _showPasswordDialog(BuildContext context) async {
+    TextEditingController _passwordController = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Reautenticação Necessária'),
+          content: TextField(
+            controller: _passwordController,
+            decoration: InputDecoration(
+              labelText: 'Digite sua senha',
+            ),
+            obscureText: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, null),
+              child: Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, _passwordController.text),
+              child: Text('Confirmar'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
