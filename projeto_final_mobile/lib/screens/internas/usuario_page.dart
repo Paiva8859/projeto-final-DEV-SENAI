@@ -368,26 +368,31 @@ class _UsuarioPageState extends State<UsuarioPage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
         automaticallyImplyLeading: false,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            if (user != null)
-              Text(
-                user.displayName ?? "Nome",
-                style: const TextStyle(color: Colors.orange, fontSize: 16),
-              ),
-            TextButton(
-              onPressed: () => _logout(context),
-              child: const Text(
-                'Logout',
-                style: TextStyle(color: Colors.black, fontSize: 16),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        actions: [
+          if (user != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, '/usuario');
+                },
+                child: CircleAvatar(
+                  backgroundColor: Colors.orange.shade400,
+                  child: Text(
+                    user.displayName?.substring(0, 1).toUpperCase() ?? 'U',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
               ),
             ),
-          ],
-        ),
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black),
+            onPressed: () => _logout(context),
+          ),
+        ],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
