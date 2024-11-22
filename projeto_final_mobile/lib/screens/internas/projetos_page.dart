@@ -90,6 +90,7 @@ class _ProjetosPageState extends State<ProjetosPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        automaticallyImplyLeading: false,
         title: const Text(
           'Projetos',
           style: TextStyle(color: Colors.black),
@@ -198,7 +199,6 @@ class _ProjetosPageState extends State<ProjetosPage> {
             ),
         ],
       ),
-      // Botão Criar Projeto
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.pushNamed(context, '/cadastro-projetos'); // Rota para a página de criação de projeto
@@ -206,32 +206,42 @@ class _ProjetosPageState extends State<ProjetosPage> {
         backgroundColor: Colors.orange,
         child: const Icon(Icons.add),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex, // Define o índice selecionado
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.black,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Início',
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Image.asset(
+            'assets/imagem-de-fundo(cadastro-e-login).png', // Substitua pelo caminho correto da imagem
+            height: 275,
+            fit: BoxFit.cover,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.task),
-            label: 'Projetos',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.emoji_events),
-            label: 'Recompensas',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Perfil',
+          BottomNavigationBar(
+            currentIndex: _selectedIndex,
+            type: BottomNavigationBarType.fixed,
+            selectedItemColor: Colors.orange,
+            unselectedItemColor: Colors.black,
+            showSelectedLabels: true,
+            showUnselectedLabels: true,
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: 'Início',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.task),
+                label: 'Projetos',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.emoji_events),
+                label: 'Recompensas',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: 'Perfil',
+              ),
+            ],
+            onTap: _onItemTapped,
           ),
         ],
-        onTap: _onItemTapped, // Chama a função quando o item é clicado
       ),
     );
   }

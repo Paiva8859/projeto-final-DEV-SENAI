@@ -94,6 +94,7 @@ class _EditarUsuarioPageState extends State<EditarUsuarioPage> {
       appBar: AppBar(
         backgroundColor: Colors.orange,
         title: Text('Editar Usuário'),
+        automaticallyImplyLeading: false,
       ),
       body: _loading
           ? Center(child: CircularProgressIndicator())

@@ -78,28 +78,44 @@ class _ProjetoCadastroPageState extends State<ProjetoCadastroPage> {
 
     return Scaffold(
       // AppBar personalizada
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
+        automaticallyImplyLeading: false,
+        title: const Text(
+          'Cadastro-de-projetos',
+          style: TextStyle(color: Colors.black),
+        ),
+        centerTitle: true,
+        actions: [
+          if (user != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, '/usuario');
+                },
+                child: CircleAvatar(
+                  backgroundColor: Colors.orange.shade400,
+                  child: Text(
+                    user.displayName?.substring(0, 1).toUpperCase() ?? 'U',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            ),
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black),
+            onPressed: () => _logout(context),
+          ),
+        ],
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
             Navigator.pushNamed(context, '/home');
           },
         ),
-        actions: [
-          // Exibe o nome do usuário logado, se houver
-          if (user != null)
-            TextButton(
-              onPressed: () {},
-              child: Text(user.displayName ?? 'Usuário',
-                  style: TextStyle(color: Colors.orange)),
-            ),
-          TextButton(
-            onPressed: () => _logout(context),
-            child: Text('Logout', style: TextStyle(color: Colors.black)),
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
