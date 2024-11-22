@@ -40,6 +40,81 @@ class _UsuarioPageState extends State<UsuarioPage> {
     }
   }
 
+  //ARRUMAR
+  // Future<void> _cancelarInscricao(Map<String, dynamic> projeto) async {
+  //   try {
+  //     final user = _auth.currentUser;
+  //     if (user == null) {
+  //       // Se o usuário não estiver logado, exibe um erro com SnackBar
+  //       print('Erro: Você precisa estar logado para cancelar a inscrição!');
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(
+  //           content:
+  //               Text('Você precisa estar logado para cancelar a inscrição!'),
+  //           backgroundColor: Colors.red,
+  //         ),
+  //       );
+  //       return;
+  //     }
+
+  //     final criadorProjetoId = projeto['criador']; // ID do criador do projeto
+  //     final projetoId = projeto['id']; // ID do projeto
+  //     final uidUsuario = user.uid; // ID único do usuário logado
+
+  //     // Verifica se o usuário está inscrito neste projeto
+  //     DocumentSnapshot voluntarioSnapshot = await _firestore
+  //         .collection('Usuarios')
+  //         .doc(criadorProjetoId) // Caminho até o usuário criador do projeto
+  //         .collection('Projetos')
+  //         .doc(projetoId) // ID do projeto
+  //         .collection('Voluntarios')
+  //         .doc(uidUsuario) // Usando uid do usuário como ID
+  //         .get();
+
+  //     if (!voluntarioSnapshot.exists) {
+  //       // Se não existir, avisa que o usuário não está inscrito
+  //       print('Erro: Você não está inscrito neste projeto!');
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(
+  //           content: Text('Você não está inscrito neste projeto!'),
+  //           backgroundColor: Colors.red,
+  //         ),
+  //       );
+  //       return;
+  //     }
+
+  //     // Atualiza o documento do voluntário para marcar que ele cancelou a inscrição
+  //     await _firestore
+  //         .collection('Usuarios')
+  //         .doc(criadorProjetoId) // ID do criador do projeto
+  //         .collection('Projetos')
+  //         .doc(projetoId) // ID do projeto
+  //         .collection('Voluntarios')
+  //         .doc(uidUsuario) // Usando uid do usuário como ID
+  //         .update({
+  //       'cancelou': true, // Marca que o voluntário cancelou sua inscrição
+  //     });
+
+  //     // Mensagem de sucesso
+  //     print('Sucesso: Você cancelou sua inscrição no projeto com sucesso!');
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //         content: Text('Você cancelou sua inscrição no projeto com sucesso!'),
+  //         backgroundColor: Colors.green,
+  //       ),
+  //     );
+  //   } catch (e) {
+  //     // Se ocorrer um erro, mostra um erro genérico com SnackBar
+  //     print('Erro ao cancelar inscrição no projeto: $e');
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text('Erro ao cancelar inscrição no projeto: $e'),
+  //         backgroundColor: Colors.red,
+  //       ),
+  //     );
+  //   }
+  // }
+
   // Enviar email de verificação de email
   Future<void> _enviarEmailVerificacao() async {
     try {
@@ -224,44 +299,49 @@ class _UsuarioPageState extends State<UsuarioPage> {
   Widget _buildProjetoInscritoCard(Map<String, dynamic> projeto) {
     return Card(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(15.0),
       ),
       margin: const EdgeInsets.symmetric(vertical: 10),
       elevation: 5,
-      child: InkWell(
-        onTap: () {},
-        borderRadius: BorderRadius.circular(12.0),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                projeto['nome'] ?? 'Projeto sem nome',
-                style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.orange),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              projeto['nome'] ?? 'Projeto sem nome',
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(height: 8),
-              Text(
-                projeto['descricao'] ?? 'Sem descrição',
-                style: TextStyle(fontSize: 18, color: Colors.black87),
-              ),
-              const SizedBox(height: 8),
-              ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+            ),
+            const SizedBox(height: 10),
+            Text('Criador: ${projeto['criador']}'),
+            const SizedBox(height: 8),
+            Text(
+              'Local ou Valor: ${projeto['localOuValor'] ?? 'Não especificado'}',
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Descrição: ${projeto['descricao'] ?? 'Sem descrição'}',
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () async {
+                await _cancelarInscricao(projeto);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Text('Acessar Projeto'),
               ),
-            ],
-          ),
+              child: const Text('Cancelar Inscrição'),
+            ),
+          ],
         ),
       ),
     );

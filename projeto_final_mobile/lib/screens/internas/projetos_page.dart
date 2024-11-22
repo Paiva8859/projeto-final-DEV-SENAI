@@ -23,6 +23,9 @@ class _ProjetosPageState extends State<ProjetosPage> {
 
   Future<void> _fetchProjetosVerificados() async {
     try {
+      User? user = _auth.currentUser;
+      if (user == null) return; // Se o usuário não estiver logado, não continua
+
       QuerySnapshot usuariosSnapshot =
           await _firestore.collection('Usuarios').get();
       List<Map<String, dynamic>> tempProjetos = [];
@@ -38,6 +41,19 @@ class _ProjetosPageState extends State<ProjetosPage> {
               projetoDoc.data() as Map<String, dynamic>;
           projetoData['criador'] = usuarioDoc.id;
           projetoData['id'] = projetoDoc.id; // Adiciona o ID do projeto
+
+          // Verifica se o usuário está inscrito no projeto
+          DocumentSnapshot voluntarioSnapshot = await _firestore
+              .collection('Usuarios')
+              .doc(usuarioDoc.id)
+              .collection('Projetos')
+              .doc(projetoDoc.id)
+              .collection('Voluntarios')
+              .doc(user.email) // O email do usuário como ID do documento
+              .get();
+
+          // Adiciona a propriedade `isInscrito` ao projeto
+          projetoData['isInscrito'] = voluntarioSnapshot.exists;
 
           tempProjetos.add(projetoData);
         }
@@ -82,56 +98,57 @@ class _ProjetosPageState extends State<ProjetosPage> {
     }
   }
 
-  Future<void> _inscreverNoProjeto(Map<String, dynamic> projeto) async {
-    try {
-      final user = _auth.currentUser;
-      if (user == null) {
-        // Se o usuário não estiver logado, exibe um erro
-        _showErrorDialog('Você precisa estar logado para se inscrever!');
-        return;
-      }
+  // ARRUMAR
+  // Future<void> _inscreverNoProjeto(Map<String, dynamic> projeto) async {
+  //   try {
+  //     final user = _auth.currentUser;
+  //     if (user == null) {
+  //       // Se o usuário não estiver logado, exibe um erro
+  //       _showErrorDialog('Você precisa estar logado para se inscrever!');
+  //       return;
+  //     }
 
-      final criadorProjetoId = projeto['criador']; // ID do criador do projeto
-      final projetoId = projeto['id']; // ID do projeto
-      final emailUsuario = user.email; // Email do usuário logado
+  //     final criadorProjetoId = projeto['criador']; // ID do criador do projeto
+  //     final projetoId = projeto['id']; // ID do projeto
+  //     final uidUsuario = user.uid; // ID único do usuário logado
 
-      // Verifica se o usuário já está inscrito neste projeto
-      DocumentSnapshot voluntarioSnapshot = await _firestore
-          .collection('Usuarios')
-          .doc(criadorProjetoId) // Caminho até o usuário criador do projeto
-          .collection('Projetos')
-          .doc(projetoId) // ID do projeto
-          .collection('Voluntarios')
-          .doc(emailUsuario) // O email do usuário será o ID do documento
-          .get();
+  //     // Verifica se o usuário já está inscrito neste projeto
+  //     DocumentSnapshot voluntarioSnapshot = await _firestore
+  //         .collection('Usuarios')
+  //         .doc(criadorProjetoId) // Caminho até o usuário criador do projeto
+  //         .collection('Projetos')
+  //         .doc(projetoId) // ID do projeto
+  //         .collection('Voluntarios')
+  //         .doc(uidUsuario) // O ID do usuário será o ID do documento
+  //         .get();
 
-      if (voluntarioSnapshot.exists) {
-        // Se já existir, avisa que o usuário já está inscrito
-        _showErrorDialog('Você já está inscrito neste projeto!');
-        return;
-      }
+  //     if (voluntarioSnapshot.exists) {
+  //       // Se já existir, avisa que o usuário já está inscrito
+  //       _showErrorDialog('Você já está inscrito neste projeto!');
+  //       return;
+  //     }
 
-      // Cria um novo documento para o voluntário na coleção 'Voluntarios' do projeto
-      await _firestore
-          .collection('Usuarios')
-          .doc(criadorProjetoId) // ID do criador do projeto
-          .collection('Projetos')
-          .doc(projetoId) // ID do projeto
-          .collection('Voluntarios')
-          .doc(emailUsuario) // O email do usuário como o ID do documento
-          .set({
-        'nome': user.displayName ?? 'Nome desconhecido', // Nome do usuário
-        'email': emailUsuario, // Email do usuário
-        'dataInscricao': FieldValue.serverTimestamp(), // Data da inscrição
-      });
+  //     // Cria um novo documento para o voluntário na coleção 'Voluntarios' do projeto
+  //     await _firestore
+  //         .collection('Usuarios')
+  //         .doc(criadorProjetoId) // ID do criador do projeto
+  //         .collection('Projetos')
+  //         .doc(projetoId) // ID do projeto
+  //         .collection('Voluntarios')
+  //         .doc(uidUsuario) // O ID do usuário como o ID do documento
+  //         .set({
+  //       'nome': user.displayName ?? 'Nome desconhecido', // Nome do usuário
+  //       'email': user.email, // Email do usuário
+  //       'dataInscricao': FieldValue.serverTimestamp(), // Data da inscrição
+  //     });
 
-      // Mensagem de sucesso
-      _showSuccessDialog('Você foi inscrito com sucesso no projeto!');
-    } catch (e) {
-      // Se ocorrer um erro, mostra um erro genérico
-      _showErrorDialog('Erro ao se inscrever no projeto: $e');
-    }
-  }
+  //     // Mensagem de sucesso
+  //     _showSuccessDialog('Você foi inscrito com sucesso no projeto!');
+  //   } catch (e) {
+  //     // Se ocorrer um erro, mostra um erro genérico
+  //     _showErrorDialog('Erro ao se inscrever no projeto: $e');
+  //   }
+  // }
 
   void _showSuccessDialog(String message) {
     showDialog(
@@ -346,23 +363,34 @@ class _ProjetosPageState extends State<ProjetosPage> {
                                               ),
                                               const SizedBox(height: 12),
                                               ElevatedButton(
-                                                onPressed: () async {
-                                                  if (isVaquinha) {
-                                                    // Lógica para fazer uma doação
-                                                    _showDoacaoDialog(projeto);
-                                                  } else {
-                                                    // Lógica de inscrição no projeto
-                                                    await _inscreverNoProjeto(
-                                                        projeto);
-                                                  }
-                                                },
+                                                onPressed: projeto['isInscrito']
+                                                    ? null // Se já estiver inscrito, desabilita o botão
+                                                    : () async {
+                                                        if (isVaquinha) {
+                                                          // Lógica para fazer uma doação
+                                                          _showDoacaoDialog(
+                                                              projeto);
+                                                        } else {
+                                                          // Lógica de inscrição no projeto
+                                                          await _inscreverNoProjeto(
+                                                              projeto);
+                                                        }
+                                                      },
                                                 style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.black,
+                                                  backgroundColor: projeto[
+                                                          'isInscrito']
+                                                      ? Colors
+                                                          .grey // Cor diferente para indicar que já está inscrito
+                                                      : Colors.black,
                                                   foregroundColor: Colors.white,
                                                 ),
-                                                child: Text(isVaquinha
-                                                    ? 'Fazer uma Doação'
-                                                    : 'Inscrever-se'),
+                                                child: Text(
+                                                  projeto['isInscrito']
+                                                      ? 'Inscrito' // Texto do botão muda para "Inscrito"
+                                                      : (isVaquinha
+                                                          ? 'Fazer uma Doação'
+                                                          : 'Inscrever-se'),
+                                                ),
                                               ),
                                             ],
                                           ),
@@ -382,6 +410,14 @@ class _ProjetosPageState extends State<ProjetosPage> {
                 );
               },
             ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(context,
+              '/cadastro-projetos'); // Rota para a página de criação de projeto
+        },
+        backgroundColor: Colors.orange,
+        child: const Icon(Icons.add),
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex, // Define o índice selecionado
         type: BottomNavigationBarType.fixed,
