@@ -55,6 +55,14 @@ class CadastroPage extends StatelessWidget {
       return;
     }
 
+    // Verificando o formato do número de telefone
+    final RegExp telefoneRegExp = RegExp(r'^\(\d{2}\) \d{5}-\d{4}$');
+    if (!telefoneRegExp.hasMatch(telefone)) {
+      _showErrorDialog(context,
+          'O número de telefone deve estar no formato (##) #####-####.');
+      return;
+    }
+
     // Verificando CPF
     if (!_validarCPF(cpf)) {
       _showErrorDialog(context, 'CPF inválido.');

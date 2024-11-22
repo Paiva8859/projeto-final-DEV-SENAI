@@ -361,92 +361,121 @@ class _UsuarioPageState extends State<UsuarioPage> {
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : Stack(
+          : Column(
               children: [
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Image.asset(
-                    'assets/imagem-de-fundo(cadastro-e-login).png', // Caminho da imagem
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: 300,
-                  ),
-                ),
-                SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildUserInfoSection(),
-                        const SizedBox(height: 20),
-                        const Text(
-                          'Missões disponíveis:',
-                          style: TextStyle(
-                              fontSize: 24, fontWeight: FontWeight.bold),
+                Expanded(
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: Image.asset(
+                          'assets/imagem-de-fundo(cadastro-e-login).png', // Caminho da imagem
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: 300,
                         ),
-                        const SizedBox(height: 12),
-                        GridView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 16.0,
-                            mainAxisSpacing: 16.0,
+                      ),
+                      SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildUserInfoSection(),
+                              const SizedBox(height: 20),
+                              const Text(
+                                'Missões disponíveis:',
+                                style: TextStyle(
+                                    fontSize: 24, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 12),
+                              _missoes.isEmpty
+                                  ? const Text(
+                                      'Nenhuma missão disponível',
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.black),
+                                    )
+                                  : GridView.builder(
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      gridDelegate:
+                                          const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
+                                        crossAxisSpacing: 16.0,
+                                        mainAxisSpacing: 16.0,
+                                      ),
+                                      itemCount: _missoes.length,
+                                      itemBuilder: (context, index) {
+                                        return _buildMissaoCard(
+                                            _missoes[index]);
+                                      },
+                                    ),
+                              const SizedBox(height: 20),
+                              const Text(
+                                'Projetos Inscritos:',
+                                style: TextStyle(
+                                    fontSize: 24, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 12),
+                              _projetosInscritos.isEmpty
+                                  ? const Text(
+                                      'Você ainda não se inscreveu em nenhum projeto',
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.black),
+                                    )
+                                  : GridView.builder(
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      gridDelegate:
+                                          const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
+                                        crossAxisSpacing: 16.0,
+                                        mainAxisSpacing: 16.0,
+                                      ),
+                                      itemCount: _projetosInscritos.length,
+                                      itemBuilder: (context, index) {
+                                        return _buildProjetoInscritoCard(
+                                            _projetosInscritos[index]);
+                                      },
+                                    ),
+                              const SizedBox(height: 20),
+                              const Text(
+                                'Seus Projetos:',
+                                style: TextStyle(
+                                    fontSize: 24, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 12),
+                              _projetos.isEmpty
+                                  ? const Text(
+                                      'Você ainda não iniciou nenhum projeto',
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.black),
+                                    )
+                                  : GridView.builder(
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      gridDelegate:
+                                          const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
+                                        crossAxisSpacing: 16.0,
+                                        mainAxisSpacing: 16.0,
+                                      ),
+                                      itemCount: _projetos.length,
+                                      itemBuilder: (context, index) {
+                                        return _buildProjetoCard(
+                                            _projetos[index]);
+                                      },
+                                    ),
+                            ],
                           ),
-                          itemCount: _missoes.length,
-                          itemBuilder: (context, index) {
-                            return _buildMissaoCard(_missoes[index]);
-                          },
                         ),
-                        const SizedBox(height: 20),
-                        const Text(
-                          'Projetos Inscritos:',
-                          style: TextStyle(
-                              fontSize: 24, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 12),
-                        GridView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 16.0,
-                            mainAxisSpacing: 16.0,
-                          ),
-                          itemCount: _projetosInscritos.length,
-                          itemBuilder: (context, index) {
-                            return _buildProjetoInscritoCard(
-                                _projetosInscritos[index]);
-                          },
-                        ),
-                        const SizedBox(height: 20),
-                        const Text(
-                          'Seus Projetos:',
-                          style: TextStyle(
-                              fontSize: 24, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 12),
-                        GridView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 16.0,
-                            mainAxisSpacing: 16.0,
-                          ),
-                          itemCount: _projetos.length,
-                          itemBuilder: (context, index) {
-                            return _buildProjetoCard(_projetos[index]);
-                          },
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ],
