@@ -1,4 +1,4 @@
-import style from "@/app/view/style/usuario.module.css";
+import style from "@/app/style/usuario.module.css";
 import Header from "../components/header";
 import Footer from "../components/footer";
 

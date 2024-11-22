@@ -1,4 +1,4 @@
-import style from "@/app/view/style/opcoes.module.css";
+import style from "@/app/style/opcoes.module.css";
 
 function MobileWeb() {
   return (

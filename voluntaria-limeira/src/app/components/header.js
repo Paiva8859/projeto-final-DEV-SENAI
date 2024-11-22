@@ -1,50 +1,35 @@
 "use client";
 import Link from "next/link";
-import style from "@/app/view/style/header.module.css";
+import style from "@/app/style/header.module.css";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../SDK_FIREBASE";
 import { useEffect, useState } from "react";
 import { signOut } from "firebase/auth";
-import { sair } from "../service/loginAdministrador";
+import { doc, getDoc } from "firebase/firestore";
 
 function Header() {
   const router = useRouter();
   const [usuarioLogado, setUsuarioLogado] = useState(null);
+  const [tipoUsuario, setTipoUsuario] = useState("");
+  // uses explicar
 
-   useEffect(() => {
-     const unsubscribe = onAuthStateChanged(auth, (user) => {
-       if (user) {
-         // Se o usuário estiver logado
-         console.log("Usuário logado:", user);
-         setUsuarioLogado(user);
-       } else {
-         // Se o usuário não estiver logado
-         console.log("Nenhum usuário logado");
-         setUsuarioLogado(null);
-       }
-     });
-
-     // Limpeza do efeito (desinscrever quando o componente for desmontado)
-     return () => unsubscribe();
-   }, []);
-
-   const logout = () => {
-     signOut(auth)
-       .then(() => {
-         console.log("Logout realizado com sucesso!");
-         // Redireciona o usuário para a página de login ou página inicial
-         router.push("/"); // Ajuste conforme necessário
-       })
-       .catch((error) => {
-         console.error("Erro ao realizar logout:", error);
-       });
-   };
+  const logout = () => {
+    signOut(auth)
+      .then(() => {
+        console.log("Logout realizado com sucesso!");
+        // Redireciona o usuário para a página de login ou página inicial
+        router.push("/"); // Ajuste conforme necessário
+      })
+      .catch((error) => {
+        console.error("Erro ao realizar logout:", error);
+      });
+  };
 
   const mudarPagina = (event) => {
     const value = event.target.value;
     if (value === "entrar") {
-      router.refresh("/home-empresa");
+      router.push("/home-empresa");
     } else if (value === "registrar") {
       router.push("/home-empresa");
     } else if (value === "administrador-login") {
@@ -80,13 +65,14 @@ function Header() {
               <option value="entrar">Entrar</option>
               <option value="empresa-login">Empresa</option>
               <option value="administrador-login">Administrador</option>
+              <option value="usuario">Usuário</option>l
             </select>
 
             {/* Link para registro */}
             <select className={style.btnCadastro} onChange={mudarPagina}>
               <option value="registrar">Registrar</option>
               <option value="empresa-cadastro">Empresa</option>
-              <option value="usuario">Usuário</option>
+              <option value="usuario">Usuário</option>l
             </select>
           </div>
         )}
