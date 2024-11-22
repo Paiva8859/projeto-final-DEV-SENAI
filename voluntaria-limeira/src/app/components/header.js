@@ -70,7 +70,7 @@ function Header() {
         {usuarioLogado ? (
           // o que e esse fragmanto
           <>
-            <p>Bem vindo {usuarioLogado.email}</p>
+            <p>Bem vindo {usuarioLogado.nome}</p>
             <button onClick={logout}>Sair</button>
           </>
         ) : (
