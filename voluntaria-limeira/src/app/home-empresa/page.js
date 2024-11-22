@@ -2,6 +2,7 @@ import style from "@/app/view/style/home.module.css";
 import MobileWeb from "../components/opcoes";
 import Footer from "@/app/components/footer"; // Adicione esta linha
 
+
 function HomeEmpresa() {
   return (
     <>
