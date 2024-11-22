@@ -118,12 +118,6 @@ class _ProjetosPageState extends State<ProjetosPage> {
             onPressed: () => _logout(context),
           ),
         ],
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pushNamed(context, '/home');
-          },
-        ),
       ),
       body: Stack(
         children: [

@@ -15,26 +15,20 @@ class _ProjetoCadastroPageState extends State<ProjetoCadastroPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Método para alternar o rótulo do campo "Local do projeto / Valor"
   String get _labelText => _isVaquinha ? 'Valor' : 'Local do projeto';
 
-  // Método para fazer logout
   Future<void> _logout(BuildContext context) async {
     await _auth.signOut();
-    Navigator.pushReplacementNamed(
-        context, '/login'); // Redireciona para a página de login
+    Navigator.pushReplacementNamed(context, '/login');
   }
 
-  // Método para salvar o projeto no Firestore
   Future<void> _salvarProjeto() async {
     try {
-      // Obtém o usuário logado
       User? user = _auth.currentUser;
       if (user == null) {
         throw Exception('Usuário não autenticado');
       }
 
-      // Cria o mapa de dados do projeto
       Map<String, dynamic> projetoData = {
         'nome': _nomeController.text.trim(),
         'descricao': _descricaoController.text.trim(),
@@ -44,19 +38,16 @@ class _ProjetoCadastroPageState extends State<ProjetoCadastroPage> {
         'tipo': 'indefinido',
       };
 
-      // Salva o projeto na coleção do Firestore
       await _firestore
           .collection('Usuarios')
           .doc(user.displayName)
           .collection('Projetos')
           .add(projetoData);
 
-      // Exibe mensagem de sucesso
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Projeto salvo com sucesso!')),
       );
 
-      // Limpa os campos após o envio
       _nomeController.clear();
       _descricaoController.clear();
       _localOuValorController.clear();
@@ -64,7 +55,6 @@ class _ProjetoCadastroPageState extends State<ProjetoCadastroPage> {
         _isVaquinha = false;
       });
     } catch (e) {
-      // Exibe mensagem de erro
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro ao salvar o projeto: $e')),
       );
@@ -73,19 +63,24 @@ class _ProjetoCadastroPageState extends State<ProjetoCadastroPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Obtém o usuário logado
     User? user = _auth.currentUser;
 
     return Scaffold(
-      // AppBar personalizada
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        automaticallyImplyLeading: false,
+        elevation: 5,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [const Color.fromARGB(255, 255, 152, 0), const Color.fromARGB(255, 255, 87, 34)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         title: const Text(
-          'Cadastro-de-projetos',
-          style: TextStyle(color: Colors.black),
+          'Cadastro de Projetos',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         actions: [
@@ -93,11 +88,9 @@ class _ProjetoCadastroPageState extends State<ProjetoCadastroPage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: GestureDetector(
-                onTap: () {
-                  Navigator.pushNamed(context, '/usuario');
-                },
+                onTap: () => Navigator.pushNamed(context, '/usuario'),
                 child: CircleAvatar(
-                  backgroundColor: Colors.orange.shade400,
+                  backgroundColor: const Color.fromARGB(255, 0, 0, 0),
                   child: Text(
                     user.displayName?.substring(0, 1).toUpperCase() ?? 'U',
                     style: const TextStyle(color: Colors.white),
@@ -106,124 +99,124 @@ class _ProjetoCadastroPageState extends State<ProjetoCadastroPage> {
               ),
             ),
           IconButton(
-            icon: const Icon(Icons.logout, color: Colors.black),
+            icon: const Icon(Icons.logout, color: Colors.white),
             onPressed: () => _logout(context),
           ),
         ],
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pushNamed(context, '/home');
-          },
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Nome do Projeto
+            TextField(
+              controller: _nomeController,
+              decoration: InputDecoration(
+                labelText: 'Nome do projeto',
+                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Descrição
+            TextField(
+              controller: _descricaoController,
+              maxLines: 5,
+              decoration: InputDecoration(
+                labelText: 'Descrição do projeto',
+                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Checkbox Vaquinha
+            Row(
+              children: [
+                Checkbox(
+                  activeColor: Colors.orange,
+                  value: _isVaquinha,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      _isVaquinha = value ?? false;
+                    });
+                  },
+                ),
+                const Text(
+                  'Vaquinha',
+                  style: TextStyle(fontSize: 16),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Campo Local ou Valor
+            TextField(
+              controller: _localOuValorController,
+              decoration: InputDecoration(
+                labelText: _labelText,
+                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+              keyboardType:
+                  _isVaquinha ? TextInputType.number : TextInputType.text,
+            ),
+            const SizedBox(height: 40),
+
+            // Botões
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 40,
+                      vertical: 15,
+                    ),
+                  ),
+                  onPressed: _salvarProjeto,
+                  child: const Text('Salvar'),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey[400],
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 40,
+                      vertical: 15,
+                    ),
+                  ),
+                  onPressed: () {
+                    _nomeController.clear();
+                    _descricaoController.clear();
+                    _localOuValorController.clear();
+                    setState(() {
+                      _isVaquinha = false;
+                    });
+                  },
+                  child: const Text('Cancelar'),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Campo para o nome do projeto
-              TextField(
-                controller: _nomeController,
-                decoration: InputDecoration(
-                  labelText: 'Nome do projeto',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Campo para a descrição do projeto
-              TextField(
-                controller: _descricaoController,
-                maxLines: 5,
-                decoration: InputDecoration(
-                  labelText: 'Descrição do projeto',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Checkbox "Vaquinha"
-              Row(
-                children: [
-                  Checkbox(
-                    value: _isVaquinha,
-                    onChanged: (bool? value) {
-                      setState(() {
-                        _isVaquinha = value ?? false;
-                      });
-                    },
-                  ),
-                  const Text(
-                    'Vaquinha',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // Campo "Local do projeto" ou "Valor"
-              TextField(
-                controller: _localOuValorController,
-                decoration: InputDecoration(
-                  labelText: _labelText,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                keyboardType:
-                    _isVaquinha ? TextInputType.number : TextInputType.text,
-              ),
-              const SizedBox(height: 40),
-
-              // Botões de enviar e cancelar
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 30,
-                        vertical: 15,
-                      ),
-                    ),
-                    onPressed: _salvarProjeto,
-                    child: const Text('Enviar'),
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 30,
-                        vertical: 15,
-                      ),
-                    ),
-                    onPressed: () {
-                      // Limpa os campos ao cancelar
-                      _nomeController.clear();
-                      _descricaoController.clear();
-                      _localOuValorController.clear();
-                      setState(() {
-                        _isVaquinha = false;
-                      });
-                    },
-                    child: const Text('Cancelar'),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-      // Bottom Navigation Bar
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(
@@ -243,8 +236,10 @@ class _ProjetoCadastroPageState extends State<ProjetoCadastroPage> {
             label: 'Perfil',
           ),
         ],
+        currentIndex: 0,
         selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.black,
+        unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
         onTap: (index) {
           switch (index) {
             case 0:

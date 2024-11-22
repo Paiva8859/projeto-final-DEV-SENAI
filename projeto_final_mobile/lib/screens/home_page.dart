@@ -69,12 +69,6 @@ class _HomePageState extends State<HomePage> {
             onPressed: () => _logout(context),
           ),
         ],
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pushNamed(context, '/home');
-          },
-        ),
       ),
       body: SingleChildScrollView(
         child: Padding(
