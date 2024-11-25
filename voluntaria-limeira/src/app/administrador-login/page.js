@@ -1,5 +1,5 @@
 "use client"; //para que serve isso
-import style from "@/app/view/style/administradorLogin.module.css";
+import style from "@/app/style/administradorLogin.module.css";
 import Header from "../components/header";
 import Footer from "../components/footer";
 import { useState } from "react";
