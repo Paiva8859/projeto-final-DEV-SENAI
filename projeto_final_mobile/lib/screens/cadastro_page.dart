@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
@@ -54,6 +55,14 @@ class CadastroPage extends StatelessWidget {
       return;
     }
 
+    // Verificando o formato do número de telefone
+    final RegExp telefoneRegExp = RegExp(r'^\(\d{2}\) \d{5}-\d{4}$');
+    if (!telefoneRegExp.hasMatch(telefone)) {
+      _showErrorDialog(context,
+          'O número de telefone deve estar no formato (##) #####-####.');
+      return;
+    }
+
     // Verificando CPF
     if (!_validarCPF(cpf)) {
       _showErrorDialog(context, 'CPF inválido.');
@@ -68,8 +77,17 @@ class CadastroPage extends StatelessWidget {
         password: senha,
       );
 
-      // Atualizando o nome do usuário
+      // Atualizando o nome do usuário no Firebase Auth
       await userCredential.user?.updateDisplayName(nome);
+
+      // Salvando os dados adicionais no Firestore
+      await FirebaseFirestore.instance.collection('Usuarios').doc(nome).set({
+        'nome': nome,
+        'email': email,
+        'telefone': telefone,
+        'cpf': cpf,
+      });
+
       _showSuccessDialog(context, 'Cadastro realizado com sucesso!');
       _limparCampos();
     } on FirebaseAuthException catch (e) {

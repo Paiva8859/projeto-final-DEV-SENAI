@@ -64,33 +64,22 @@ class _ProjetoCadastroPageState extends State<ProjetoCadastroPage> {
   @override
   Widget build(BuildContext context) {
     User? user = _auth.currentUser;
-
+    
     return Scaffold(
-      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        elevation: 5,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [const Color.fromARGB(255, 255, 152, 0), const Color.fromARGB(255, 255, 87, 34)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
-        title: const Text(
-          'Cadastro de Projetos',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.white,
+        elevation: 0,
         actions: [
           if (user != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: GestureDetector(
-                onTap: () => Navigator.pushNamed(context, '/usuario'),
+                onTap: () {
+                  Navigator.pushNamed(context, '/usuario');
+                },
                 child: CircleAvatar(
-                  backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+                  backgroundColor: Colors.orange.shade400,
                   child: Text(
                     user.displayName?.substring(0, 1).toUpperCase() ?? 'U',
                     style: const TextStyle(color: Colors.white),
@@ -99,7 +88,7 @@ class _ProjetoCadastroPageState extends State<ProjetoCadastroPage> {
               ),
             ),
           IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white),
+            icon: const Icon(Icons.logout, color: Colors.black),
             onPressed: () => _logout(context),
           ),
         ],

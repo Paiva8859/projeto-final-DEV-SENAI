@@ -40,6 +40,102 @@ class _UsuarioPageState extends State<UsuarioPage> {
     }
   }
 
+  //ARRUMAR
+  // Future<void> _cancelarInscricao(Map<String, dynamic> projeto) async {
+  //   try {
+  //     final user = _auth.currentUser;
+  //     if (user == null) {
+  //       // Se o usuário não estiver logado, exibe um erro com SnackBar
+  //       print('Erro: Você precisa estar logado para cancelar a inscrição!');
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(
+  //           content:
+  //               Text('Você precisa estar logado para cancelar a inscrição!'),
+  //           backgroundColor: Colors.red,
+  //         ),
+  //       );
+  //       return;
+  //     }
+
+  //     final criadorProjetoId = projeto['criador']; // ID do criador do projeto
+  //     final projetoId = projeto['id']; // ID do projeto
+  //     final uidUsuario = user.uid; // ID único do usuário logado
+
+  //     // Verifica se o usuário está inscrito neste projeto
+  //     DocumentSnapshot voluntarioSnapshot = await _firestore
+  //         .collection('Usuarios')
+  //         .doc(criadorProjetoId) // Caminho até o usuário criador do projeto
+  //         .collection('Projetos')
+  //         .doc(projetoId) // ID do projeto
+  //         .collection('Voluntarios')
+  //         .doc(uidUsuario) // Usando uid do usuário como ID
+  //         .get();
+
+  //     if (!voluntarioSnapshot.exists) {
+  //       // Se não existir, avisa que o usuário não está inscrito
+  //       print('Erro: Você não está inscrito neste projeto!');
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(
+  //           content: Text('Você não está inscrito neste projeto!'),
+  //           backgroundColor: Colors.red,
+  //         ),
+  //       );
+  //       return;
+  //     }
+
+  //     // Atualiza o documento do voluntário para marcar que ele cancelou a inscrição
+  //     await _firestore
+  //         .collection('Usuarios')
+  //         .doc(criadorProjetoId) // ID do criador do projeto
+  //         .collection('Projetos')
+  //         .doc(projetoId) // ID do projeto
+  //         .collection('Voluntarios')
+  //         .doc(uidUsuario) // Usando uid do usuário como ID
+  //         .update({
+  //       'cancelou': true, // Marca que o voluntário cancelou sua inscrição
+  //     });
+
+  //     // Mensagem de sucesso
+  //     print('Sucesso: Você cancelou sua inscrição no projeto com sucesso!');
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //         content: Text('Você cancelou sua inscrição no projeto com sucesso!'),
+  //         backgroundColor: Colors.green,
+  //       ),
+  //     );
+  //   } catch (e) {
+  //     // Se ocorrer um erro, mostra um erro genérico com SnackBar
+  //     print('Erro ao cancelar inscrição no projeto: $e');
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text('Erro ao cancelar inscrição no projeto: $e'),
+  //         backgroundColor: Colors.red,
+  //       ),
+  //     );
+  //   }
+  // }
+
+  // Enviar email de verificação de email
+  Future<void> _enviarEmailVerificacao() async {
+    try {
+      if (_currentUser != null && !_currentUser!.emailVerified) {
+        await _currentUser!.sendEmailVerification();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  'Para continuar com essa ação verifique seu Email. \nE-mail de verificação enviado. Verifique sua caixa de entrada.')),
+        );
+      }
+    } catch (e) {
+      print('Erro ao enviar e-mail de verificação: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(
+                'Para continuar com essa ação verifique seu Email. \nErro ao enviar e-mail de verificação.')),
+      );
+    }
+  }
+
   // Método para fazer logout
   Future<void> _logout(BuildContext context) async {
     await _auth.signOut();
@@ -172,8 +268,17 @@ class _UsuarioPageState extends State<UsuarioPage> {
             Align(
               alignment: Alignment.centerRight,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/editarUsuario');
+                onPressed: () async {
+                  await FirebaseAuth.instance.currentUser
+                      ?.reload(); // Recarregar dados do usuário
+                  User? updatedUser = FirebaseAuth.instance.currentUser;
+
+                  if (updatedUser != null && updatedUser.emailVerified) {
+                    // Redirecionar para a página de edição se o e-mail agora estiver verificado
+                    Navigator.pushNamed(context, '/editarUsuario');
+                  } else {
+                    _enviarEmailVerificacao();
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
@@ -194,44 +299,49 @@ class _UsuarioPageState extends State<UsuarioPage> {
   Widget _buildProjetoInscritoCard(Map<String, dynamic> projeto) {
     return Card(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(15.0),
       ),
       margin: const EdgeInsets.symmetric(vertical: 10),
       elevation: 5,
-      child: InkWell(
-        onTap: () {},
-        borderRadius: BorderRadius.circular(12.0),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                projeto['nome'] ?? 'Projeto sem nome',
-                style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.orange),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              projeto['nome'] ?? 'Projeto sem nome',
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(height: 8),
-              Text(
-                projeto['descricao'] ?? 'Sem descrição',
-                style: TextStyle(fontSize: 18, color: Colors.black87),
-              ),
-              const SizedBox(height: 8),
-              ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+            ),
+            const SizedBox(height: 10),
+            Text('Criador: ${projeto['criador']}'),
+            const SizedBox(height: 8),
+            Text(
+              'Local ou Valor: ${projeto['localOuValor'] ?? 'Não especificado'}',
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Descrição: ${projeto['descricao'] ?? 'Sem descrição'}',
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () async {
+                await _cancelarInscricao(projeto);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Text('Acessar Projeto'),
               ),
-            ],
-          ),
+              child: const Text('Cancelar Inscrição'),
+            ),
+          ],
         ),
       ),
     );
@@ -338,115 +448,149 @@ class _UsuarioPageState extends State<UsuarioPage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
         automaticallyImplyLeading: false,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            if (user != null)
-              Text(
-                user.displayName ?? "Nome",
-                style: const TextStyle(color: Colors.orange, fontSize: 16),
-              ),
-            TextButton(
-              onPressed: () => _logout(context),
-              child: const Text(
-                'Logout',
-                style: TextStyle(color: Colors.black, fontSize: 16),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        actions: [
+          if (user != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, '/usuario');
+                },
+                child: CircleAvatar(
+                  backgroundColor: Colors.orange.shade400,
+                  child: Text(
+                    user.displayName?.substring(0, 1).toUpperCase() ?? 'U',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
               ),
             ),
-          ],
-        ),
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black),
+            onPressed: () => _logout(context),
+          ),
+        ],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : Stack(
+          : Column(
               children: [
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Image.asset(
-                    'assets/imagem-de-fundo(cadastro-e-login).png', // Caminho da imagem
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: 300,
-                  ),
-                ),
-                SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildUserInfoSection(),
-                        const SizedBox(height: 20),
-                        const Text(
-                          'Missões disponíveis:',
-                          style: TextStyle(
-                              fontSize: 24, fontWeight: FontWeight.bold),
+                Expanded(
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: Image.asset(
+                          'assets/imagem-de-fundo(cadastro-e-login).png', // Caminho da imagem
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: 300,
                         ),
-                        const SizedBox(height: 12),
-                        GridView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 16.0,
-                            mainAxisSpacing: 16.0,
+                      ),
+                      SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildUserInfoSection(),
+                              const SizedBox(height: 20),
+                              const Text(
+                                'Missões disponíveis:',
+                                style: TextStyle(
+                                    fontSize: 24, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 12),
+                              _missoes.isEmpty
+                                  ? const Text(
+                                      'Nenhuma missão disponível',
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.black),
+                                    )
+                                  : GridView.builder(
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      gridDelegate:
+                                          const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
+                                        crossAxisSpacing: 16.0,
+                                        mainAxisSpacing: 16.0,
+                                      ),
+                                      itemCount: _missoes.length,
+                                      itemBuilder: (context, index) {
+                                        return _buildMissaoCard(
+                                            _missoes[index]);
+                                      },
+                                    ),
+                              const SizedBox(height: 20),
+                              const Text(
+                                'Projetos Inscritos:',
+                                style: TextStyle(
+                                    fontSize: 24, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 12),
+                              _projetosInscritos.isEmpty
+                                  ? const Text(
+                                      'Você ainda não se inscreveu em nenhum projeto',
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.black),
+                                    )
+                                  : GridView.builder(
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      gridDelegate:
+                                          const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
+                                        crossAxisSpacing: 16.0,
+                                        mainAxisSpacing: 16.0,
+                                      ),
+                                      itemCount: _projetosInscritos.length,
+                                      itemBuilder: (context, index) {
+                                        return _buildProjetoInscritoCard(
+                                            _projetosInscritos[index]);
+                                      },
+                                    ),
+                              const SizedBox(height: 20),
+                              const Text(
+                                'Seus Projetos:',
+                                style: TextStyle(
+                                    fontSize: 24, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 12),
+                              _projetos.isEmpty
+                                  ? const Text(
+                                      'Você ainda não iniciou nenhum projeto',
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.black),
+                                    )
+                                  : GridView.builder(
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      gridDelegate:
+                                          const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
+                                        crossAxisSpacing: 16.0,
+                                        mainAxisSpacing: 16.0,
+                                      ),
+                                      itemCount: _projetos.length,
+                                      itemBuilder: (context, index) {
+                                        return _buildProjetoCard(
+                                            _projetos[index]);
+                                      },
+                                    ),
+                            ],
                           ),
-                          itemCount: _missoes.length,
-                          itemBuilder: (context, index) {
-                            return _buildMissaoCard(_missoes[index]);
-                          },
                         ),
-                        const SizedBox(height: 20),
-                        const Text(
-                          'Projetos Inscritos:',
-                          style: TextStyle(
-                              fontSize: 24, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 12),
-                        GridView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 16.0,
-                            mainAxisSpacing: 16.0,
-                          ),
-                          itemCount: _projetosInscritos.length,
-                          itemBuilder: (context, index) {
-                            return _buildProjetoInscritoCard(
-                                _projetosInscritos[index]);
-                          },
-                        ),
-                        const SizedBox(height: 20),
-                        const Text(
-                          'Seus Projetos:',
-                          style: TextStyle(
-                              fontSize: 24, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 12),
-                        GridView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 16.0,
-                            mainAxisSpacing: 16.0,
-                          ),
-                          itemCount: _projetos.length,
-                          itemBuilder: (context, index) {
-                            return _buildProjetoCard(_projetos[index]);
-                          },
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ],
