@@ -40,80 +40,118 @@ class _UsuarioPageState extends State<UsuarioPage> {
     }
   }
 
-  //ARRUMAR
-  // Future<void> _cancelarInscricao(Map<String, dynamic> projeto) async {
-  //   try {
-  //     final user = _auth.currentUser;
-  //     if (user == null) {
-  //       // Se o usuário não estiver logado, exibe um erro com SnackBar
-  //       print('Erro: Você precisa estar logado para cancelar a inscrição!');
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(
-  //           content:
-  //               Text('Você precisa estar logado para cancelar a inscrição!'),
-  //           backgroundColor: Colors.red,
-  //         ),
-  //       );
-  //       return;
-  //     }
+  Future<void> _cancelarInscricao(Map<String, dynamic> projeto) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        // Verifica se o usuário está logado
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content:
+                Text('Você precisa estar logado para cancelar a inscrição!'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
 
-  //     final criadorProjetoId = projeto['criador']; // ID do criador do projeto
-  //     final projetoId = projeto['id']; // ID do projeto
-  //     final uidUsuario = user.uid; // ID único do usuário logado
+      final criadorProjetoId = projeto['criador']; // ID do criador do projeto
+      final nomeUsuario =
+          user.displayName ?? 'Nome desconhecido'; // Nome do usuário
+      final nomeUsuarioSanitizado =
+          nomeUsuario.replaceAll(RegExp(r'[./\[\]#?]'), '-');
 
-  //     // Verifica se o usuário está inscrito neste projeto
-  //     DocumentSnapshot voluntarioSnapshot = await _firestore
-  //         .collection('Usuarios')
-  //         .doc(criadorProjetoId) // Caminho até o usuário criador do projeto
-  //         .collection('Projetos')
-  //         .doc(projetoId) // ID do projeto
-  //         .collection('Voluntarios')
-  //         .doc(uidUsuario) // Usando uid do usuário como ID
-  //         .get();
+      // Inicializa projetoId com valor padrão, como uma string vazia
+      String? projetoId;
 
-  //     if (!voluntarioSnapshot.exists) {
-  //       // Se não existir, avisa que o usuário não está inscrito
-  //       print('Erro: Você não está inscrito neste projeto!');
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(
-  //           content: Text('Você não está inscrito neste projeto!'),
-  //           backgroundColor: Colors.red,
-  //         ),
-  //       );
-  //       return;
-  //     }
+      // 1. Listar projetos do criador
+      final projetosSnapshot = await _firestore
+          .collection('Usuarios')
+          .doc(criadorProjetoId)
+          .collection('Projetos')
+          .get();
 
-  //     // Atualiza o documento do voluntário para marcar que ele cancelou a inscrição
-  //     await _firestore
-  //         .collection('Usuarios')
-  //         .doc(criadorProjetoId) // ID do criador do projeto
-  //         .collection('Projetos')
-  //         .doc(projetoId) // ID do projeto
-  //         .collection('Voluntarios')
-  //         .doc(uidUsuario) // Usando uid do usuário como ID
-  //         .update({
-  //       'cancelou': true, // Marca que o voluntário cancelou sua inscrição
-  //     });
+      // Verifique se algum projeto foi encontrado
+      if (projetosSnapshot.docs.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Nenhum projeto encontrado para o criador!'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
 
-  //     // Mensagem de sucesso
-  //     print('Sucesso: Você cancelou sua inscrição no projeto com sucesso!');
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(
-  //         content: Text('Você cancelou sua inscrição no projeto com sucesso!'),
-  //         backgroundColor: Colors.green,
-  //       ),
-  //     );
-  //   } catch (e) {
-  //     // Se ocorrer um erro, mostra um erro genérico com SnackBar
-  //     print('Erro ao cancelar inscrição no projeto: $e');
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text('Erro ao cancelar inscrição no projeto: $e'),
-  //         backgroundColor: Colors.red,
-  //       ),
-  //     );
-  //   }
-  // }
+      // 2. Buscar o ID do projeto a partir da lista
+      for (var doc in projetosSnapshot.docs) {
+        if (doc.data()['nome'] == projeto['nome']) {
+          projetoId = doc.id; // ID do documento do projeto
+          break;
+        }
+      }
+
+      if (projetoId == null) {
+        // Se não encontrar o projeto pelo nome
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Projeto não encontrado!'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      // 3. Verificar se o usuário está inscrito neste projeto
+      DocumentSnapshot voluntarioSnapshot = await _firestore
+          .collection('Usuarios')
+          .doc(criadorProjetoId)
+          .collection('Projetos')
+          .doc(projetoId)
+          .collection('Voluntarios')
+          .doc(nomeUsuarioSanitizado)
+          .get();
+
+      if (!voluntarioSnapshot.exists) {
+        // Se não existir, avisa que o usuário não está inscrito
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Você não está inscrito neste projeto!'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      // 4. Remover o documento do voluntário na coleção 'Voluntarios' do projeto
+      await _firestore
+          .collection('Usuarios')
+          .doc(criadorProjetoId)
+          .collection('Projetos')
+          .doc(projetoId)
+          .collection('Voluntarios')
+          .doc(nomeUsuarioSanitizado)
+          .delete();
+
+      // Mensagem de sucesso
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Você cancelou sua inscrição no projeto com sucesso!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Recarrega a lista de projetos inscritos chamando _fetchUserData
+      await _fetchUserData();
+    } catch (e) {
+      // Se ocorrer um erro, mostra um erro genérico com SnackBar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao cancelar inscrição no projeto: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   // Enviar email de verificação de email
   Future<void> _enviarEmailVerificacao() async {
@@ -156,6 +194,9 @@ class _UsuarioPageState extends State<UsuarioPage> {
         return;
       }
 
+      // Remover ou substituir caracteres especiais que não são permitidos no Firestore
+      nomeUsuario = nomeUsuario.replaceAll(RegExp(r'[./\[\]#?]'), '-');
+
       DocumentSnapshot userSnapshot =
           await _firestore.collection('Usuarios').doc(nomeUsuario).get();
 
@@ -180,7 +221,7 @@ class _UsuarioPageState extends State<UsuarioPage> {
               await projetoDoc.reference.collection('Voluntarios').get();
 
           if (voluntariosSnapshot.docs
-              .any((voluntario) => voluntario.id == _currentUser!.email)) {
+              .any((voluntario) => voluntario.id == nomeUsuario)) {
             Map<String, dynamic> projetoData =
                 projetoDoc.data() as Map<String, dynamic>;
             projetoData['criador'] = usuarioDoc.id;

@@ -99,56 +99,71 @@ class _ProjetosPageState extends State<ProjetosPage> {
   }
 
   // ARRUMAR
-  // Future<void> _inscreverNoProjeto(Map<String, dynamic> projeto) async {
-  //   try {
-  //     final user = _auth.currentUser;
-  //     if (user == null) {
-  //       // Se o usuário não estiver logado, exibe um erro
-  //       _showErrorDialog('Você precisa estar logado para se inscrever!');
-  //       return;
-  //     }
+  Future<void> _inscreverNoProjeto(Map<String, dynamic> projeto) async {
+  try {
+    final user = _auth.currentUser;
+    if (user == null) {
+      // Se o usuário não estiver logado, exibe um erro
+      _showErrorDialog('Você precisa estar logado para se inscrever!');
+      return;
+    }
 
-  //     final criadorProjetoId = projeto['criador']; // ID do criador do projeto
-  //     final projetoId = projeto['id']; // ID do projeto
-  //     final uidUsuario = user.uid; // ID único do usuário logado
+    final criadorProjetoId = projeto['criador']; // ID do criador do projeto
+    final projetoId = projeto['id']; // ID do projeto
+    final emailUsuario = user.email; // E-mail do usuário logado
 
-  //     // Verifica se o usuário já está inscrito neste projeto
-  //     DocumentSnapshot voluntarioSnapshot = await _firestore
-  //         .collection('Usuarios')
-  //         .doc(criadorProjetoId) // Caminho até o usuário criador do projeto
-  //         .collection('Projetos')
-  //         .doc(projetoId) // ID do projeto
-  //         .collection('Voluntarios')
-  //         .doc(uidUsuario) // O ID do usuário será o ID do documento
-  //         .get();
+    if (emailUsuario == null) {
+      _showErrorDialog('Não foi possível identificar seu e-mail. Tente novamente.');
+      return;
+    }
 
-  //     if (voluntarioSnapshot.exists) {
-  //       // Se já existir, avisa que o usuário já está inscrito
-  //       _showErrorDialog('Você já está inscrito neste projeto!');
-  //       return;
-  //     }
+    // Verifica se o usuário já está inscrito neste projeto
+    DocumentSnapshot voluntarioSnapshot = await _firestore
+        .collection('Usuarios')
+        .doc(criadorProjetoId) // Caminho até o usuário criador do projeto
+        .collection('Projetos')
+        .doc(projetoId) // ID do projeto
+        .collection('Voluntarios')
+        .doc(emailUsuario) // O e-mail do usuário será o ID do documento
+        .get();
 
-  //     // Cria um novo documento para o voluntário na coleção 'Voluntarios' do projeto
-  //     await _firestore
-  //         .collection('Usuarios')
-  //         .doc(criadorProjetoId) // ID do criador do projeto
-  //         .collection('Projetos')
-  //         .doc(projetoId) // ID do projeto
-  //         .collection('Voluntarios')
-  //         .doc(uidUsuario) // O ID do usuário como o ID do documento
-  //         .set({
-  //       'nome': user.displayName ?? 'Nome desconhecido', // Nome do usuário
-  //       'email': user.email, // Email do usuário
-  //       'dataInscricao': FieldValue.serverTimestamp(), // Data da inscrição
-  //     });
+    if (voluntarioSnapshot.exists) {
+      // Se já existir, avisa que o usuário já está inscrito
+      _showErrorDialog('Você já está inscrito neste projeto!');
+      return;
+    }
 
-  //     // Mensagem de sucesso
-  //     _showSuccessDialog('Você foi inscrito com sucesso no projeto!');
-  //   } catch (e) {
-  //     // Se ocorrer um erro, mostra um erro genérico
-  //     _showErrorDialog('Erro ao se inscrever no projeto: $e');
-  //   }
-  // }
+    // Cria um novo documento para o voluntário na coleção 'Voluntarios' do projeto
+    await _firestore
+        .collection('Usuarios')
+        .doc(criadorProjetoId) // ID do criador do projeto
+        .collection('Projetos')
+        .doc(projetoId) // ID do projeto
+        .collection('Voluntarios')
+        .doc(emailUsuario) // O e-mail do usuário como o ID do documento
+        .set({
+      'nome': user.displayName ?? 'Nome desconhecido', // Nome do usuário
+      'email': emailUsuario, // E-mail do usuário
+      'dataInscricao': FieldValue.serverTimestamp(), // Data da inscrição
+    });
+
+    // Atualiza o estado da lista de projetos para refletir a inscrição
+    setState(() {
+      final projetoIndex = _projetosVerificados.indexWhere(
+          (p) => p['id'] == projetoId && p['criador'] == criadorProjetoId);
+      if (projetoIndex != -1) {
+        _projetosVerificados[projetoIndex]['isInscrito'] = true;
+      }
+    });
+
+    // Mensagem de sucesso
+    _showSuccessDialog('Você foi inscrito com sucesso no projeto!');
+  } catch (e) {
+    // Se ocorrer um erro, mostra um erro genérico
+    _showErrorDialog('Erro ao se inscrever no projeto: $e');
+  }
+}
+
 
   void _showSuccessDialog(String message) {
     showDialog(
