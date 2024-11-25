@@ -1,31 +1,43 @@
 "use client";
+
 import Link from "next/link";
 import style from "@/app/style/header.module.css";
 import { useRouter } from "next/navigation";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../SDK_FIREBASE";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useEffect, useState } from "react";
-import { signOut } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { auth } from "../SDK_FIREBASE";
 
 function Header() {
   const router = useRouter();
-  const [usuarioLogado, setUsuarioLogado] = useState(null);
-  const [tipoUsuario, setTipoUsuario] = useState("");
-  // uses explicar
+  const [usuarioLogado, setUsuarioLogado] = useState(null); // Definindo o estado
 
+  // Monitore o estado de autenticação do usuário
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUsuarioLogado(user); // Atualiza o estado quando o usuário está logado
+      } else {
+        setUsuarioLogado(null); // Reseta o estado quando não há usuário logado
+      }
+    });
+
+    // Limpa o listener quando o componente é desmontado
+    return () => unsubscribe();
+  }, []);
+
+  // Função de logout
   const logout = () => {
     signOut(auth)
       .then(() => {
         console.log("Logout realizado com sucesso!");
-        // Redireciona o usuário para a página de login ou página inicial
-        router.push("/"); // Ajuste conforme necessário
+        router.push("/"); // Redireciona o usuário para a página inicial
       })
       .catch((error) => {
         console.error("Erro ao realizar logout:", error);
       });
   };
 
+  // Função para mudar de página com base no valor selecionado no select
   const mudarPagina = (event) => {
     const value = event.target.value;
     if (value === "entrar") {
@@ -53,9 +65,9 @@ function Header() {
           <Link href="/projetos">Projetos</Link>
         </div>
         {usuarioLogado ? (
-          // o que e esse fragmanto
+          // Fragmento React para agrupar múltiplos elementos sem criar um nó no DOM
           <>
-            <p>Bem vindo {usuarioLogado.email}</p>
+            <p>Bem-vindo, {usuarioLogado.email}</p>
             <button onClick={logout}>Sair</button>
           </>
         ) : (
@@ -65,14 +77,14 @@ function Header() {
               <option value="entrar">Entrar</option>
               <option value="empresa-login">Empresa</option>
               <option value="administrador-login">Administrador</option>
-              <option value="usuario">Usuário</option>l
+              <option value="usuario">Usuário</option>
             </select>
 
-            {/* Link para registro */}
+            {/* Select para registro */}
             <select className={style.btnCadastro} onChange={mudarPagina}>
               <option value="registrar">Registrar</option>
               <option value="empresa-cadastro">Empresa</option>
-              <option value="usuario">Usuário</option>l
+              <option value="usuario">Usuário</option>
             </select>
           </div>
         )}

@@ -1,11 +1,13 @@
 import Header from "./components/header";
 import Footer from "./components/footer";
 import HomeEmpresa from "./home-empresa/page";
-import { AuthProvider } from "./service/authContext";
+import  useAuth, { AuthProvider }  from "./service/authContext";
 
 export default function Home() {
+
+  console.log("Função",AuthProvider);
   return (
-    <AuthProvider>
+    <AuthProvider >
       <Header />
       <HomeEmpresa />
       <Footer />

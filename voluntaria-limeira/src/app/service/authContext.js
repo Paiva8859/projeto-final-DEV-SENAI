@@ -1,67 +1,65 @@
 "use client";
-
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { auth, db } from "../SDK_FIREBASE"; // Certifique-se de que as importações estão corretas
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "../SDK_FIREBASE";
 
-// criar o contexto
-const authContext = createContext();
+// Criação do contexto de autenticação
+const AuthContext = createContext();
 
-// crie um hook personalizado para acessar o contexto com facilidade
-export function useAuth() {
-  return useContext(authContext);
-}
-
+// Função para prover o contexto de autenticação
 export function AuthProvider({ children }) {
   const [usuarioLogado, setUsuarioLogado] = useState(null);
   const [tipoUsuario, setTipoUsuario] = useState("");
+  const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        console.log("Usuário logado:", user); // Verifique se o usuário está logado
         setUsuarioLogado(user);
-
         try {
+          setCarregando(true);
+
           const refEmpresa = doc(db, "Empresa", user.uid);
           const docEmpresa = await getDoc(refEmpresa);
 
           if (docEmpresa.exists()) {
-            console.log("Esse usuário é uma empresa.");
             setTipoUsuario("Empresa");
-            return;
-          }
-
-          const refAdministrador = doc(db, "Administradores", user.uid);
-          const docAdministrador = await getDoc(refAdministrador);
-
-          if (docAdministrador.exists()) {
-            console.log("Esse usuário é um administrador");
-            setTipoUsuario("Administrador");
           } else {
-            console.log("Nenhum dado encontrado para usuário.");
-            setTipoUsuario("");
+            const refAdministrador = doc(db, "Administradores", user.uid);
+            const docAdministrador = await getDoc(refAdministrador);
+
+            if (docAdministrador.exists()) {
+              setTipoUsuario("Administrador");
+            } else {
+              setTipoUsuario("");
+            }
           }
         } catch (err) {
-          console.error(`Houve um erro ao buscar o usuário: ${err}`);
+          console.error(`Erro ao buscar dados do usuário: ${err}`);
+        } finally {
+          setCarregando(false);
         }
       } else {
-        console.log("Nenhum usuário logado");
         setUsuarioLogado(null);
         setTipoUsuario("");
+        setCarregando(false);
       }
     });
 
     return () => unsubscribe();
   }, []);
 
-  console.log("Tipo de usuário:", tipoUsuario); // Verifique se tipoUsuario é atualizado corretamente
+  console.log("AuthProvider:", { usuarioLogado, tipoUsuario, carregando });
 
-  const value = {
-    usuarioLogado,
-    tipoUsuario,
-  };
+  return (
+    <AuthContext.Provider value={{ usuarioLogado, tipoUsuario, carregando }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
 
-  return <authContext.Provider value={value}>{children}</authContext.Provider>;
+// Custom hook para usar o contexto de autenticação
+export function useAuth() {
+  return useContext(AuthContext);
 }
