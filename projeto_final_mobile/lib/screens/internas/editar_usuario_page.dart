@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 class EditarUsuarioPage extends StatefulWidget {
   @override
@@ -19,6 +20,12 @@ class _EditarUsuarioPageState extends State<EditarUsuarioPage> {
   User? _currentUser;
   bool _loading = true;
   bool _emailVerificado = false;
+
+  // Máscaras para CPF e telefone
+  final maskFormatterTelefone = MaskTextInputFormatter(
+    mask: '(##) #####-####',
+    filter: {"#": RegExp(r'[0-9]')},
+  );
 
   Future<void> _fetchUserData() async {
     try {
@@ -47,40 +54,97 @@ class _EditarUsuarioPageState extends State<EditarUsuarioPage> {
     }
   }
 
+  Future<void> _salvarAlteracoes() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final String nome = _nomeController.text.trim();
+    final String telefone = _telefoneController.text.trim();
+    final String email = _emailController.text.trim();
+
+    // Verificando se todos os campos estão preenchidos
+    if (nome.isEmpty || telefone.isEmpty || email.isEmpty) {
+      _showErrorDialog('Por favor, preencha todos os campos.');
+      return;
+    }
+
+    // Verificando o formato do número de telefone
+    final RegExp telefoneRegExp = RegExp(r'^\(\d{2}\) \d{5}-\d{4}$');
+    if (!telefoneRegExp.hasMatch(telefone)) {
+      _showErrorDialog('O número de telefone deve estar no formato (##) #####-####.');
+      return;
+    }
+
+    // Verificando o formato do e-mail
+    final RegExp emailRegExp = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+    if (!emailRegExp.hasMatch(email)) {
+      _showErrorDialog('Por favor, insira um e-mail válido.');
+      return;
+    }
+
+    try {
+      String? nomeUsuario = _currentUser?.displayName ?? "Usuário Desconhecido";
+
+      // Atualizar dados no Firestore
+      await _firestore.collection('Usuarios').doc(nomeUsuario).update({
+        'nome': nome,
+        'telefone': telefone,
+        'email': email,
+      });
+
+      // Verifique se o novo e-mail precisa ser atualizado
+      if (email != _currentUser?.email) {
+        await _reautenticarUsuario();
+        await _enviarEmailVerificacaoNovoEmail(email);
+      } else {
+        _showSuccessDialog('Dados atualizados com sucesso!');
+      }
+    } catch (e) {
+      print('Erro ao salvar alterações: $e');
+      _showErrorDialog('Erro ao salvar alterações. Tente novamente.');
+    }
+  }
+
+  // Função para reautenticar o usuário
+  Future<void> _reautenticarUsuario() async {
+    String? senha = await _showPasswordDialog();
+
+    if (senha != null && senha.isNotEmpty) {
+      try {
+        AuthCredential credential = EmailAuthProvider.credential(
+          email: _currentUser!.email!,
+          password: senha,
+        );
+        await _currentUser!.reauthenticateWithCredential(credential);
+      } catch (e) {
+        print('Erro na reautenticação: $e');
+        _showErrorDialog('Erro na reautenticação. Tente novamente.');
+      }
+    }
+  }
+
   // Função para enviar o e-mail de verificação para o novo e-mail
   Future<void> _enviarEmailVerificacaoNovoEmail(String novoEmail) async {
     try {
       if (_currentUser != null) {
-        // Envia um e-mail de verificação para o novo e-mail antes de atualizá-lo
         await _currentUser?.verifyBeforeUpdateEmail(novoEmail);
-
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  'E-mail de verificação enviado para $novoEmail. Verifique sua caixa de entrada antes de continuar.')),
+          SnackBar(content: Text('E-mail de verificação enviado. Verifique sua caixa de entrada.')),
         );
-
-        // Monitorar o estado de verificação do e-mail
         _monitorarVerificacaoEmail();
       }
     } catch (e) {
       print('Erro ao enviar e-mail de verificação para o novo e-mail: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(
-                'Erro ao enviar e-mail de verificação para o novo e-mail.')),
-      );
+      _showErrorDialog('Erro ao enviar e-mail de verificação. Tente novamente.');
     }
   }
 
-  // Função para monitorar a verificação do e-mail
+  // Monitorar o estado de verificação do e-mail
   void _monitorarVerificacaoEmail() {
     _auth.userChanges().listen((user) {
       if (user != null && user.emailVerified) {
         setState(() {
           _emailVerificado = true;
         });
-        // Chama a função para finalizar a atualização após a verificação
         _finalizarAtualizacao();
       }
     });
@@ -94,66 +158,45 @@ class _EditarUsuarioPageState extends State<EditarUsuarioPage> {
     Navigator.pop(context);
   }
 
-  Future<void> _salvarAlteracoes() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    try {
-      String? nomeUsuario = _currentUser?.displayName ?? "Usuário Desconhecido";
-
-      // Atualizar dados no Firestore
-      await _firestore.collection('Usuarios').doc(nomeUsuario).update({
-        'nome': _nomeController.text.trim(),
-        'telefone': _telefoneController.text.trim(),
-        'email': _emailController.text.trim(),
-      });
-
-      // Verifique se o novo e-mail precisa ser atualizado
-      String novoEmail = _emailController.text.trim();
-      if (novoEmail != _currentUser?.email) {
-        // Reautenticar o usuário antes de atualizar o e-mail
-        await _reautenticarUsuario(context);
-
-        // Enviar email de verificação para o novo e-mail
-        await _enviarEmailVerificacaoNovoEmail(novoEmail);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Dados atualizados com sucesso!')),
-        );
-        Navigator.pop(context);
-      }
-    } catch (e) {
-      print('Erro ao salvar alterações: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao salvar alterações.')),
-      );
-    }
+  // Exibir um diálogo de erro
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Erro'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
-  Future<void> _reautenticarUsuario(BuildContext context) async {
-    // Solicita a senha do usuário para reautenticação
-    String? senha = await _showPasswordDialog(context);
-
-    if (senha != null && senha.isNotEmpty) {
-      try {
-        // Cria as credenciais do usuário com o e-mail e a senha fornecidos
-        AuthCredential credential = EmailAuthProvider.credential(
-          email: _currentUser!.email!,
-          password: senha,
-        );
-
-        // Reautentica o usuário
-        await _currentUser!.reauthenticateWithCredential(credential);
-      } catch (e) {
-        print('Erro na reautenticação: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro na reautenticação.')),
-        );
-      }
-    }
+  // Exibir um diálogo de sucesso
+  void _showSuccessDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Sucesso'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
-  // Exibe um diálogo para o usuário inserir a senha para reautenticação
-  Future<String?> _showPasswordDialog(BuildContext context) async {
+  // Exibir o diálogo para inserir a senha para reautenticação
+  Future<String?> _showPasswordDialog() async {
     TextEditingController _passwordController = TextEditingController();
     return showDialog<String>(
       context: context,
@@ -162,9 +205,7 @@ class _EditarUsuarioPageState extends State<EditarUsuarioPage> {
           title: Text('Reautenticação Necessária'),
           content: TextField(
             controller: _passwordController,
-            decoration: InputDecoration(
-              labelText: 'Digite sua senha',
-            ),
+            decoration: InputDecoration(labelText: 'Digite sua senha'),
             obscureText: true,
           ),
           actions: [
@@ -231,6 +272,7 @@ class _EditarUsuarioPageState extends State<EditarUsuarioPage> {
                         labelText: 'Telefone',
                         border: OutlineInputBorder(),
                       ),
+                      inputFormatters: [maskFormatterTelefone], // Aplica a máscara
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Por favor, insira seu telefone';
@@ -255,7 +297,7 @@ class _EditarUsuarioPageState extends State<EditarUsuarioPage> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 24),
+                    SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: _salvarAlteracoes,
                       child: Text('Salvar Alterações'),
