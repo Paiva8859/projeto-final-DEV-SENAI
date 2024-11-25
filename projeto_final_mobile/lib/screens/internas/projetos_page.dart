@@ -100,70 +100,70 @@ class _ProjetosPageState extends State<ProjetosPage> {
 
   // ARRUMAR
   Future<void> _inscreverNoProjeto(Map<String, dynamic> projeto) async {
-  try {
-    final user = _auth.currentUser;
-    if (user == null) {
-      // Se o usuário não estiver logado, exibe um erro
-      _showErrorDialog('Você precisa estar logado para se inscrever!');
-      return;
-    }
-
-    final criadorProjetoId = projeto['criador']; // ID do criador do projeto
-    final projetoId = projeto['id']; // ID do projeto
-    final emailUsuario = user.email; // E-mail do usuário logado
-
-    if (emailUsuario == null) {
-      _showErrorDialog('Não foi possível identificar seu e-mail. Tente novamente.');
-      return;
-    }
-
-    // Verifica se o usuário já está inscrito neste projeto
-    DocumentSnapshot voluntarioSnapshot = await _firestore
-        .collection('Usuarios')
-        .doc(criadorProjetoId) // Caminho até o usuário criador do projeto
-        .collection('Projetos')
-        .doc(projetoId) // ID do projeto
-        .collection('Voluntarios')
-        .doc(emailUsuario) // O e-mail do usuário será o ID do documento
-        .get();
-
-    if (voluntarioSnapshot.exists) {
-      // Se já existir, avisa que o usuário já está inscrito
-      _showErrorDialog('Você já está inscrito neste projeto!');
-      return;
-    }
-
-    // Cria um novo documento para o voluntário na coleção 'Voluntarios' do projeto
-    await _firestore
-        .collection('Usuarios')
-        .doc(criadorProjetoId) // ID do criador do projeto
-        .collection('Projetos')
-        .doc(projetoId) // ID do projeto
-        .collection('Voluntarios')
-        .doc(emailUsuario) // O e-mail do usuário como o ID do documento
-        .set({
-      'nome': user.displayName ?? 'Nome desconhecido', // Nome do usuário
-      'email': emailUsuario, // E-mail do usuário
-      'dataInscricao': FieldValue.serverTimestamp(), // Data da inscrição
-    });
-
-    // Atualiza o estado da lista de projetos para refletir a inscrição
-    setState(() {
-      final projetoIndex = _projetosVerificados.indexWhere(
-          (p) => p['id'] == projetoId && p['criador'] == criadorProjetoId);
-      if (projetoIndex != -1) {
-        _projetosVerificados[projetoIndex]['isInscrito'] = true;
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        // Se o usuário não estiver logado, exibe um erro
+        _showErrorDialog('Você precisa estar logado para se inscrever!');
+        return;
       }
-    });
 
-    // Mensagem de sucesso
-    _showSuccessDialog('Você foi inscrito com sucesso no projeto!');
-  } catch (e) {
-    // Se ocorrer um erro, mostra um erro genérico
-    _showErrorDialog('Erro ao se inscrever no projeto: $e');
+      final criadorProjetoId = projeto['criador']; // ID do criador do projeto
+      final projetoId = projeto['id']; // ID do projeto
+      final emailUsuario = user.email; // E-mail do usuário logado
+
+      if (emailUsuario == null) {
+        _showErrorDialog(
+            'Não foi possível identificar seu e-mail. Tente novamente.');
+        return;
+      }
+
+      // Verifica se o usuário já está inscrito neste projeto
+      DocumentSnapshot voluntarioSnapshot = await _firestore
+          .collection('Usuarios')
+          .doc(criadorProjetoId) // Caminho até o usuário criador do projeto
+          .collection('Projetos')
+          .doc(projetoId) // ID do projeto
+          .collection('Voluntarios')
+          .doc(emailUsuario) // O e-mail do usuário será o ID do documento
+          .get();
+
+      if (voluntarioSnapshot.exists) {
+        // Se já existir, avisa que o usuário já está inscrito
+        _showErrorDialog('Você já está inscrito neste projeto!');
+        return;
+      }
+
+      // Cria um novo documento para o voluntário na coleção 'Voluntarios' do projeto
+      await _firestore
+          .collection('Usuarios')
+          .doc(criadorProjetoId) // ID do criador do projeto
+          .collection('Projetos')
+          .doc(projetoId) // ID do projeto
+          .collection('Voluntarios')
+          .doc(emailUsuario) // O e-mail do usuário como o ID do documento
+          .set({
+        'nome': user.displayName ?? 'Nome desconhecido', // Nome do usuário
+        'email': emailUsuario, // E-mail do usuário
+        'dataInscricao': FieldValue.serverTimestamp(), // Data da inscrição
+      });
+
+      // Atualiza o estado da lista de projetos para refletir a inscrição
+      setState(() {
+        final projetoIndex = _projetosVerificados.indexWhere(
+            (p) => p['id'] == projetoId && p['criador'] == criadorProjetoId);
+        if (projetoIndex != -1) {
+          _projetosVerificados[projetoIndex]['isInscrito'] = true;
+        }
+      });
+
+      // Mensagem de sucesso
+      _showSuccessDialog('Você foi inscrito com sucesso no projeto!');
+    } catch (e) {
+      // Se ocorrer um erro, mostra um erro genérico
+      _showErrorDialog('Erro ao se inscrever no projeto: $e');
+    }
   }
-}
-
 
   void _showSuccessDialog(String message) {
     showDialog(
@@ -271,31 +271,21 @@ class _ProjetosPageState extends State<ProjetosPage> {
 
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          if (user != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.pushNamed(context, '/usuario');
-                },
-                child: CircleAvatar(
-                  backgroundColor: Colors.orange.shade400,
-                  child: Text(
-                    user.displayName?.substring(0, 1).toUpperCase() ?? 'U',
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ),
-              ),
+        elevation: 5,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFFFF6F17), Color(0xFF302F2F)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.black),
-            onPressed: () => _logout(context),
           ),
-        ],
+        ),
+        title: const Text(
+          'Projetos',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())

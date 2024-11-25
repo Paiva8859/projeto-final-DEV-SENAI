@@ -66,13 +66,13 @@ class _ProjetoCadastroPageState extends State<ProjetoCadastroPage> {
     User? user = _auth.currentUser;
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: const Color(0xFFEBEBEB),
       appBar: AppBar(
         elevation: 5,
         flexibleSpace: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [const Color.fromARGB(255, 255, 152, 0), const Color.fromARGB(255, 255, 87, 34)],
+              colors: [Color(0xFFFF6F17), Color(0xFF302F2F)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -90,7 +90,7 @@ class _ProjetoCadastroPageState extends State<ProjetoCadastroPage> {
               child: GestureDetector(
                 onTap: () => Navigator.pushNamed(context, '/usuario'),
                 child: CircleAvatar(
-                  backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+                  backgroundColor: const Color(0xFF302F2F),
                   child: Text(
                     user.displayName?.substring(0, 1).toUpperCase() ?? 'U',
                     style: const TextStyle(color: Colors.white),
@@ -109,38 +109,39 @@ class _ProjetoCadastroPageState extends State<ProjetoCadastroPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Nome do Projeto
             TextField(
               controller: _nomeController,
               decoration: InputDecoration(
                 labelText: 'Nome do projeto',
-                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                labelStyle: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF302F2F),
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(15),
                 ),
               ),
             ),
             const SizedBox(height: 20),
-
-            // Descrição
             TextField(
               controller: _descricaoController,
               maxLines: 5,
               decoration: InputDecoration(
                 labelText: 'Descrição do projeto',
-                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                labelStyle: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF302F2F),
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(15),
                 ),
               ),
             ),
             const SizedBox(height: 20),
-
-            // Checkbox Vaquinha
             Row(
               children: [
                 Checkbox(
-                  activeColor: Colors.orange,
+                  activeColor: const Color(0xFFF7A26D),
                   value: _isVaquinha,
                   onChanged: (bool? value) {
                     setState(() {
@@ -150,18 +151,19 @@ class _ProjetoCadastroPageState extends State<ProjetoCadastroPage> {
                 ),
                 const Text(
                   'Vaquinha',
-                  style: TextStyle(fontSize: 16),
+                  style: TextStyle(fontSize: 16, color: Color(0xFF302F2F)),
                 ),
               ],
             ),
             const SizedBox(height: 20),
-
-            // Campo Local ou Valor
             TextField(
               controller: _localOuValorController,
               decoration: InputDecoration(
                 labelText: _labelText,
-                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                labelStyle: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF302F2F),
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(15),
                 ),
@@ -170,14 +172,12 @@ class _ProjetoCadastroPageState extends State<ProjetoCadastroPage> {
                   _isVaquinha ? TextInputType.number : TextInputType.text,
             ),
             const SizedBox(height: 40),
-
-            // Botões
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
+                    backgroundColor: const Color(0xFFF7A26D),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
@@ -192,8 +192,8 @@ class _ProjetoCadastroPageState extends State<ProjetoCadastroPage> {
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[400],
-                    foregroundColor: Colors.black,
+                    backgroundColor: const Color(0xFFEBEBEB),
+                    foregroundColor: Color(0xFF302F2F),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
@@ -237,8 +237,8 @@ class _ProjetoCadastroPageState extends State<ProjetoCadastroPage> {
           ),
         ],
         currentIndex: 0,
-        selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: const Color(0xFFF7A26D),
+        unselectedItemColor: const Color(0xFF302F2F),
         type: BottomNavigationBarType.fixed,
         onTap: (index) {
           switch (index) {
