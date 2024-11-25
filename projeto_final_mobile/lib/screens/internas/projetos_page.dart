@@ -235,7 +235,6 @@ class _ProjetosPageState extends State<ProjetosPage> {
         return;
       }
 
-      // Aqui você pode adicionar lógica para registrar a doação (ex: adicionar à coleção de doações)
       await _firestore
           .collection('Projetos')
           .doc(projeto['id'])
