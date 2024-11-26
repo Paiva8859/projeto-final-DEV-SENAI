@@ -14,6 +14,10 @@ async function cadastroRecompensa(titulo, descricao, inicio, termino) {
     const dataInicio = new Date(inicio);
     const dataExpiracao = new Date(termino);
 
+    // Somando 1 dia (24 horas) à data
+    dataInicio.setTime(dataInicio.getTime() + 24 * 60 * 60 * 1000);
+    dataExpiracao.setTime(dataExpiracao.getTime() + 24 * 60 * 60 * 1000);
+
     await setDoc(doc(db, "Recompensas", titulo), {
       titulo: titulo,
       descricao: descricao,
