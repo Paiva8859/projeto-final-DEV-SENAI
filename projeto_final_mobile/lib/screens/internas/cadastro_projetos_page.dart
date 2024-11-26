@@ -14,6 +14,7 @@ class _ProjetoCadastroPageState extends State<ProjetoCadastroPage> {
   bool _isVaquinha = false;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  int _selectedIndex = 1; // Definir o índice da Recompensas como selecionado
 
   String get _labelText => _isVaquinha ? 'Valor' : 'Local do projeto';
 
@@ -64,6 +65,7 @@ class _ProjetoCadastroPageState extends State<ProjetoCadastroPage> {
   @override
   Widget build(BuildContext context) {
     User? user = _auth.currentUser;
+
 
     return Scaffold(
       backgroundColor: const Color(0xFFEBEBEB),
@@ -218,6 +220,12 @@ class _ProjetoCadastroPageState extends State<ProjetoCadastroPage> {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex, // Define o índice selecionado
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Colors.orange,
+        unselectedItemColor: Colors.black,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),

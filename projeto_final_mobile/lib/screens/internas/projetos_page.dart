@@ -133,6 +133,11 @@ class _ProjetosPageState extends State<ProjetosPage> {
         _showErrorDialog('Você já está inscrito neste projeto!');
         return;
       }
+      if (voluntarioSnapshot.exists) {
+        // Se já existir, avisa que o usuário já está inscrito
+        _showErrorDialog('Você já está inscrito neste projeto!');
+        return;
+      }
 
       // Cria um novo documento para o voluntário na coleção 'Voluntarios' do projeto
       await _firestore
@@ -247,7 +252,6 @@ class _ProjetosPageState extends State<ProjetosPage> {
         return;
       }
 
-      // Aqui você pode adicionar lógica para registrar a doação (ex: adicionar à coleção de doações)
       await _firestore
           .collection('Projetos')
           .doc(projeto['id'])
