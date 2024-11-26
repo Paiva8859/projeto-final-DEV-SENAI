@@ -4,7 +4,7 @@ import Header from "../components/header";
 import Footer from "../components/footer";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {loginAdministrador} from "../service/loginAdministrador";
+import loginAdministrador from "../service/loginAdministrador";
 
 function AdministradorLogin() {
   const router = useRouter();
@@ -17,7 +17,7 @@ function AdministradorLogin() {
       const administradorLogado = await loginAdministrador(email, senha);
       console.log(`Login realizado com sucesso ${administradorLogado.email}`);
 
-      router.push("/projetos");
+      router.push("/");
       // validar que e adm, para mostrar as funcionalidades
     } catch (err) {
       console.error(`Houve um erro ao realizar o login ${err}`);

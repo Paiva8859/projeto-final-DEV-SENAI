@@ -1,4 +1,5 @@
 import { db } from "../SDK_FIREBASE";
+
 import {
   doc,
   setDoc,
@@ -8,61 +9,60 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 
-// Função para converter Date para string "dd/MM/yyyy"
-function dataParaString(data) {
-  const dia = String(data.getDate()).padStart(2, "0");
-  const mes = String(data.getMonth() + 1).padStart(2, "0"); // Mês é zero-indexado
-  const ano = data.getFullYear();
-  return `${dia}/${mes}/${ano}`;
-}
 
-// Função para converter string "dd/MM/yyyy" para Date
-function stringParaData(dataString) {
-  const [dia, mes, ano] = dataString.split("/").map(Number);
-  return new Date(ano, mes - 1, dia); // Mês é zero-indexado (0 = Janeiro)
-}
 
-// Função para cadastrar recompensa
 async function cadastroRecompensa(titulo, descricao, inicio, termino) {
   try {
-    // Converte a data recebida para Date
-    const dataInicio = stringParaData(inicio);
-    const dataExpiracao = stringParaData(termino);
+    // Construa as datas manualmente para evitar erros
+    const [diaInicio, mesInicio, anoInicio] = inicio.split("/").map(Number);
+    const [diaTermino, mesTermino, anoTermino] = termino.split("/").map(Number);
+
+    // Cria a data no formato ano, mês (base 0), dia
+    const dataInicio = new Date(anoInicio, mesInicio - 1, diaInicio);
+    const dataExpiracao = new Date(anoTermino, mesTermino - 1, diaTermino);
+
+    // Formata as datas para o formato "dd/MM/yyyy"
+    const dataInicioFormatada = `${Number(diaInicio).padStart(2, "0")}/${Number(
+      mesInicio
+    ).padStart(2, "0")}/${anoInicio}`;
+    const dataExpiracaoFormatada = `${Number(diaTermino).padStart(
+      2,
+      "0"
+    )}/${String(mesTermino).padStart(2, "0")}/${anoTermino}`;
+
 
     // Verificar se as datas fornecidas são válidas
     if (isNaN(dataInicio.getTime()) || isNaN(dataExpiracao.getTime())) {
       throw new Error("Data de início ou data de expiração inválida.");
-    }
-
-    // Converte as datas para strings no formato "dd/MM/yyyy"
-    const dataInicioFormatada = dataParaString(dataInicio);
-    const dataExpiracaoFormatada = dataParaString(dataExpiracao);
+    };
 
     // Salva a recompensa no Firestore com datas no formato string e Timestamp
     await setDoc(doc(db, "Recompensas", titulo), {
       titulo: titulo,
       descricao: descricao,
-      valor: 0,
-      dataInicio: {
-        timestamp: Timestamp.fromDate(dataInicio),
-        formatada: dataInicioFormatada,
-      },
-      dataExpiracao: {
-        timestamp: Timestamp.fromDate(dataExpiracao),
-        formatada: dataExpiracaoFormatada,
-      },
+
+      dataInicio: Number(dataInicioFormatada),
+      dataExpiracao: dataExpiracaoFormatada,
       verificado: false,
     });
 
     console.log(`Recompensa criada com sucesso: ${titulo}`);
-    return { titulo, descricao, dataInicioFormatada, dataExpiracaoFormatada };
+
+    return {
+      titulo,
+      descricao,
+      dataInicio: dataInicioFormatada,
+      dataExpiracao: dataExpiracaoFormatada,
+    };
   } catch (err) {
     console.error("Erro ao criar recompensa: ", err);
     throw err;
   }
 }
 
-// Função para verificar recompensas expiradas
+
+
+
 async function verificarRecompensasExpiradas() {
   try {
     const colecaoRecompensas = collection(db, "Recompensas");
@@ -71,10 +71,8 @@ async function verificarRecompensasExpiradas() {
     snapshot.forEach(async (documento) => {
       const dados = documento.data();
 
-      if (
-        dados.dataExpiracao &&
-        dados.dataExpiracao.timestamp.toDate() < new Date()
-      ) {
+
+      if (dados.dataExpiracao && dados.dataExpiracao.toDate() > new Date()) {
         await deleteDoc(documento.ref);
         console.log(`Recompensa ${documento.id} deletada por expiração.`);
       }
@@ -86,3 +84,4 @@ async function verificarRecompensasExpiradas() {
 }
 
 export { cadastroRecompensa, verificarRecompensasExpiradas };
+

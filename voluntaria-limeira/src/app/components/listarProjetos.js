@@ -11,7 +11,7 @@ function ListarProjetos() {
     const fetchProjetos = async () => {
       try {
         // Referência para a coleção "Projetos"
-        const projetosRef = collection(db, "Projetos");
+        const projetosRef = collection(db, "Usuarios");
 
         // Consulta para obter todos os documentos da coleção "Projetos"
         const querySnapshot = await getDocs(projetosRef);
