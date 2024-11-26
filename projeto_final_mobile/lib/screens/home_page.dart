@@ -45,7 +45,7 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
-          'home',
+          'Recompensas',
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,

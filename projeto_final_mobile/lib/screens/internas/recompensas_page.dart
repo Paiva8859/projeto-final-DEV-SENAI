@@ -15,7 +15,6 @@ class _RecompensasPageState extends State<RecompensasPage> {
   List<Map<String, dynamic>> _recompensas = [];
   bool _loading = true;
   int _selectedIndex = 2; // Definir o índice da Recompensas como selecionado
-  int _moedas = 0; // Quantidade de moedas do usuário
 
   @override
   void initState() {
@@ -150,7 +149,7 @@ class _RecompensasPageState extends State<RecompensasPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Rcompensas',
+          'Recompensas',
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,

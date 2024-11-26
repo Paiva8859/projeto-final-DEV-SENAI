@@ -257,9 +257,9 @@ class _ProjetosPageState extends State<ProjetosPage> {
     User? user = _auth.currentUser;
 
     return Scaffold(
-      appBar: AppBar(
+     appBar: AppBar(
         title: const Text(
-          'Projetos Verificados',
+          'Projetos-Verificados',
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,
@@ -287,22 +287,13 @@ class _ProjetosPageState extends State<ProjetosPage> {
                 onTap: () {
                   Navigator.pushNamed(context, '/usuario');
                 },
-                child: Container(
-                  padding: const EdgeInsets.all(
-                      2), // Espaço entre contorno e CircleAvatar
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                        color: Colors.tealAccent, width: 2), // Contorno preto
-                  ),
-                  child: CircleAvatar(
-                    backgroundColor: Colors.white,
-                    child: Text(
-                      user.displayName?.substring(0, 1).toUpperCase() ?? 'U',
-                      style: const TextStyle(
-                        color: Colors.orange,
-                        fontWeight: FontWeight.bold,
-                      ),
+                child: CircleAvatar(
+                  backgroundColor: Colors.white,
+                  child: Text(
+                    user.displayName?.substring(0, 1).toUpperCase() ?? 'U',
+                    style: const TextStyle(
+                      color: Colors.orange,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
