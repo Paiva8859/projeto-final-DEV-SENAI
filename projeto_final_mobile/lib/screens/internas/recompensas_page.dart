@@ -149,34 +149,52 @@ class _RecompensasPageState extends State<RecompensasPage> {
 
     return Scaffold(
       appBar: AppBar(
+        title: const Text(
+          'Rcompensas',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
         automaticallyImplyLeading: false,
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Moedas: $_moedas',
-              style: TextStyle(color: Colors.orange, fontSize: 18),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.orange, Colors.red],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            if (user != null)
-              GestureDetector(
+          ),
+        ),
+        actions: [
+          if (user != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: GestureDetector(
                 onTap: () {
                   Navigator.pushNamed(context, '/usuario');
                 },
                 child: CircleAvatar(
-                  backgroundColor: Colors.orange.shade400,
+                  backgroundColor: Colors.white,
                   child: Text(
                     user.displayName?.substring(0, 1).toUpperCase() ?? 'U',
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(
+                      color: Colors.orange,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
-          ],
-        ),
-        actions: [
+            ),
           IconButton(
-            icon: const Icon(Icons.logout, color: Colors.black),
+            icon: const Icon(
+              Icons.logout,
+              color: Colors.white,
+            ),
             onPressed: () => _logout(context),
           ),
         ],

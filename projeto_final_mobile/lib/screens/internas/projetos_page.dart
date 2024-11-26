@@ -98,7 +98,6 @@ class _ProjetosPageState extends State<ProjetosPage> {
     }
   }
 
-  // ARRUMAR
   Future<void> _inscreverNoProjeto(Map<String, dynamic> projeto) async {
     try {
       final user = _auth.currentUser;
@@ -110,13 +109,11 @@ class _ProjetosPageState extends State<ProjetosPage> {
 
       final criadorProjetoId = projeto['criador']; // ID do criador do projeto
       final projetoId = projeto['id']; // ID do projeto
-      final emailUsuario = user.email; // E-mail do usuário logado
+      String nomeUsuario =
+          user.displayName ?? 'Nome desconhecido'; // Nome do usuário
 
-      if (emailUsuario == null) {
-        _showErrorDialog(
-            'Não foi possível identificar seu e-mail. Tente novamente.');
-        return;
-      }
+      // Remover ou substituir caracteres especiais que não são permitidos no Firestore
+      nomeUsuario = nomeUsuario.replaceAll(RegExp(r'[./\[\]#?]'), '-');
 
       // Verifica se o usuário já está inscrito neste projeto
       DocumentSnapshot voluntarioSnapshot = await _firestore
@@ -125,14 +122,9 @@ class _ProjetosPageState extends State<ProjetosPage> {
           .collection('Projetos')
           .doc(projetoId) // ID do projeto
           .collection('Voluntarios')
-          .doc(emailUsuario) // O e-mail do usuário será o ID do documento
+          .doc(nomeUsuario) // O nome do usuário será o ID do documento
           .get();
 
-      if (voluntarioSnapshot.exists) {
-        // Se já existir, avisa que o usuário já está inscrito
-        _showErrorDialog('Você já está inscrito neste projeto!');
-        return;
-      }
       if (voluntarioSnapshot.exists) {
         // Se já existir, avisa que o usuário já está inscrito
         _showErrorDialog('Você já está inscrito neste projeto!');
@@ -146,20 +138,11 @@ class _ProjetosPageState extends State<ProjetosPage> {
           .collection('Projetos')
           .doc(projetoId) // ID do projeto
           .collection('Voluntarios')
-          .doc(emailUsuario) // O e-mail do usuário como o ID do documento
+          .doc(nomeUsuario) // O nome do usuário como o ID do documento
           .set({
         'nome': user.displayName ?? 'Nome desconhecido', // Nome do usuário
-        'email': emailUsuario, // E-mail do usuário
+        'email': user.email, // Email do usuário
         'dataInscricao': FieldValue.serverTimestamp(), // Data da inscrição
-      });
-
-      // Atualiza o estado da lista de projetos para refletir a inscrição
-      setState(() {
-        final projetoIndex = _projetosVerificados.indexWhere(
-            (p) => p['id'] == projetoId && p['criador'] == criadorProjetoId);
-        if (projetoIndex != -1) {
-          _projetosVerificados[projetoIndex]['isInscrito'] = true;
-        }
       });
 
       // Mensagem de sucesso
@@ -275,21 +258,55 @@ class _ProjetosPageState extends State<ProjetosPage> {
 
     return Scaffold(
       appBar: AppBar(
-        elevation: 5,
+        title: const Text(
+          'Projetos Verificados',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFFFF6F17), Color(0xFF302F2F)],
+              colors: [Colors.orange, Colors.red],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
           ),
         ),
-        title: const Text(
-          'Projetos',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
+        actions: [
+          if (user != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, '/usuario');
+                },
+                child: CircleAvatar(
+                  backgroundColor: Colors.white,
+                  child: Text(
+                    user.displayName?.substring(0, 1).toUpperCase() ?? 'U',
+                    style: const TextStyle(
+                      color: Colors.orange,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          IconButton(
+            icon: const Icon(
+              Icons.logout,
+              color: Colors.white,
+            ),
+            onPressed: () => _logout(context),
+          ),
+        ],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
@@ -427,37 +444,32 @@ class _ProjetosPageState extends State<ProjetosPage> {
         backgroundColor: Colors.orange,
         child: const Icon(Icons.add),
       ),
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          BottomNavigationBar(
-            currentIndex: _selectedIndex,
-            type: BottomNavigationBarType.fixed,
-            selectedItemColor: Colors.orange,
-            unselectedItemColor: Colors.black,
-            showSelectedLabels: true,
-            showUnselectedLabels: true,
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home),
-                label: 'Início',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.task),
-                label: 'Projetos',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.emoji_events),
-                label: 'Recompensas',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person),
-                label: 'Perfil',
-              ),
-            ],
-            onTap: _onItemTapped,
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex, // Define o índice selecionado
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Colors.orange,
+        unselectedItemColor: Colors.black,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Início',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.task),
+            label: 'Projetos',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.emoji_events),
+            label: 'Recompensas',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Perfil',
           ),
         ],
+        onTap: _onItemTapped, // Chama a função quando o item é clicado
       ),
     );
   }

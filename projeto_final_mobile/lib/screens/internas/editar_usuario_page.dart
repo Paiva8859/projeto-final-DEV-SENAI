@@ -243,7 +243,6 @@ class _EditarUsuarioPageState extends State<EditarUsuarioPage> {
       appBar: AppBar(
         backgroundColor: Colors.orange,
         title: Text('Editar Usuário'),
-        automaticallyImplyLeading: false,
       ),
       body: _loading
           ? Center(child: CircularProgressIndicator())
@@ -298,32 +297,10 @@ class _EditarUsuarioPageState extends State<EditarUsuarioPage> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        ElevatedButton(
-                          onPressed: _salvarAlteracoes,
-                          child: Text('Salvar Alterações'),
-                        ),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey.shade400,
-                            foregroundColor: Colors.black,
-                          ),
-                          onPressed: () {
-                            // Exibe mensagem de cancelamento
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Edição de usuário cancelada.'),
-                              ),
-                            );
-                            // Retorna para a página de usuário
-                            Navigator.pop(context);
-                          },
-                          child: Text('Cancelar'),
-                        ),
-                      ],
+                    SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _salvarAlteracoes,
+                      child: Text('Salvar Alterações'),
                     ),
                   ],
                 ),
