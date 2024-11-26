@@ -42,13 +42,13 @@ function Recompensas() {
         />
         <input
           className={style.inputRecompensa}
-          type="datetime-local"
+          type="date"
           value={inicio}
           onChange={(e) => setInicio(e.target.value)}
         />
         <input
           className={style.inputRecompensa}
-          type="datetime-local"
+          type="date"
           value={termino}
           onChange={(e) => setTermino(e.target.value)}
         />
