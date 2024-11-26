@@ -13,7 +13,22 @@
 .buttonCadastrarRecompensa{
     position: fixed;      
     bottom: 5%;             
-    right: 5%;    
+    right: 2%;    
     transform: translate(-50%, -50%);
-    z-index: 1;      
+    z-index: 1;   
+    height: 35px;
+    width:35px;
+    text-align: center;
+    font-size: x-large;
+    background-color: var(--laranja-escuro);
+    border: 2px solid var(--laranja-escuro);
+    border-radius: 20px;
+    color: aliceblue;
+    transition: .5s ease-in-out;   
+}
+.buttonCadastrarRecompensa:hover{   
+    background-color: white;
+    border-radius: 2px;
+    color: var(--laranja-escuro); 
+    box-shadow: 0px 0px 10px 0px var(--laranja-escuro);  
 }

@@ -31,7 +31,7 @@ function Recompensa() {
     // Verifica o estado atual de visibilidade do formulário e alterna
     if (estiloForm.display === "none") {
       formulario.style.display = "flex";
-      botao.textContent = "X";
+      botao.textContent = "x";
     } else {
       formulario.style.display = "none";
       botao.textContent = "+";

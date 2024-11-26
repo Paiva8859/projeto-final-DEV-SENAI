@@ -10,6 +10,24 @@ import { auth } from "../SDK_FIREBASE";
 function Header() {
   const router = useRouter();
   const [usuarioLogado, setUsuarioLogado] = useState(null); // Definindo o estado
+  const [hasShadow, setHasShadow] = useState(false);
+
+  // Criando efeito header
+  useEffect(()=>{
+    const handleScroll = () =>{
+      if (window.scrollY > 0) {
+        setHasShadow(true);
+      }else{
+        setHasShadow(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    return()=>{
+      window.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
 
   // Monitore o estado de autenticação do usuário
   useEffect(() => {
@@ -56,7 +74,7 @@ function Header() {
   };
 
   return (
-    <header className={style.header}>
+    <header className={`${style.header} ${hasShadow? style.shadow :''}`}>
       <nav className={style.nav}>
         <div className={style.linksNavegacao}>
           {/* Usando Link para navegação */}
@@ -73,7 +91,7 @@ function Header() {
         ) : (
           <div className={style.autenticacao}>
             {/* Select para navegação */}
-            <select className={style.btnLogin} onChange={mudarPagina}>
+            <select className={`${style.btnLogin} ${style.btnCadLog}`} onChange={mudarPagina}>
               <option value="entrar">Entrar</option>
               <option value="empresa-login">Empresa</option>
               <option value="administrador-login">Administrador</option>
@@ -81,7 +99,7 @@ function Header() {
             </select>
 
             {/* Select para registro */}
-            <select className={style.btnCadastro} onChange={mudarPagina}>
+            <select className={`${style.btnCadastro} ${style.btnCadLog}`} onChange={mudarPagina}>
               <option value="registrar">Registrar</option>
               <option value="empresa-cadastro">Empresa</option>
               <option value="usuario">Usuário</option>
