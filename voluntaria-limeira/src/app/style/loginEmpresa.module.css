@@ -85,23 +85,18 @@
 }
 
 .mensagem {
-  width: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
-  top: 0;
-  position: fixed;
   animation: mensagemVisivel 2s ease-in;
+  color: red;
+  background-color: var(--branco);
+  border-radius: 5px;
+  margin: 0;
+  padding: 20px;
+  text-align: center;
+  font-size: small;
 }
 
-.mensagem p {
-  color: var(--cinza-escuro);
-  background-color: var(--branco);
-  font-size: 1.25rem;
-  padding: 20px;
-  border-radius: 5px;
-  box-shadow: -5px 8px 100px -3px var(--cinza-claro);
-}
 
 @keyframes mensagemVisivel {
   0% {

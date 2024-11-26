@@ -36,6 +36,7 @@ function EmpresaLogin() {
         <div className={style.containerFormulario}>
           <form className={style.formulario}>
             <div className={style.inputLogin}>
+              <p className={style.mensagem} >{mensagem}</p>
               <h3>Torne-se um Parceiro</h3>
               <input
                 type="email"
@@ -59,9 +60,6 @@ function EmpresaLogin() {
 
             <button className={style.btnLogin}>Registrar</button>
           </div>
-        </div>
-        <div className={style.mensagem}>
-          <p>{mensagem}</p>
         </div>
       </div>
       <Footer />
