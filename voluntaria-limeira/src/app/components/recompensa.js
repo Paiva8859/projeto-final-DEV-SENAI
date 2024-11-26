@@ -47,7 +47,8 @@ const router = useRouter()
 
   return (
     <>
-      <div>
+      <div className={style.sectionRecompensa}>
+            <h2>Cadastre uma Recompensa</h2>
         <form id="formRecompensa" className={style.form}>
           <div>
             <label htmlFor="tituloRecompensa">Título da Recompensa</label>
