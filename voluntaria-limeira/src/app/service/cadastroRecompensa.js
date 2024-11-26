@@ -3,16 +3,10 @@ import {
   doc,
   setDoc,
   Timestamp,
-  deleteDoc,
   collection,
   getDocs,
+  deleteDoc,
 } from "firebase/firestore";
-
-// Função para converter string "dd/MM/yyyy" para Date
-function stringParaData(dataString) {
-  const [dia, mes, ano] = dataString.split("/").map(Number);
-  return new Date(ano, mes - 1, dia); // Mês é zero-indexado (0 = Janeiro)
-}
 
 // Função para converter Date para string "dd/MM/yyyy"
 function dataParaString(data) {
@@ -22,10 +16,16 @@ function dataParaString(data) {
   return `${dia}/${mes}/${ano}`;
 }
 
+// Função para converter string "dd/MM/yyyy" para Date
+function stringParaData(dataString) {
+  const [dia, mes, ano] = dataString.split("/").map(Number);
+  return new Date(ano, mes - 1, dia); // Mês é zero-indexado (0 = Janeiro)
+}
+
 // Função para cadastrar recompensa
 async function cadastroRecompensa(titulo, descricao, inicio, termino) {
   try {
-    // Converte as strings de data para objetos Date
+    // Converte a data recebida para Date
     const dataInicio = stringParaData(inicio);
     const dataExpiracao = stringParaData(termino);
 
@@ -34,17 +34,28 @@ async function cadastroRecompensa(titulo, descricao, inicio, termino) {
       throw new Error("Data de início ou data de expiração inválida.");
     }
 
+    // Converte as datas para strings no formato "dd/MM/yyyy"
+    const dataInicioFormatada = dataParaString(dataInicio);
+    const dataExpiracaoFormatada = dataParaString(dataExpiracao);
+
+    // Salva a recompensa no Firestore com datas no formato string e Timestamp
     await setDoc(doc(db, "Recompensas", titulo), {
       titulo: titulo,
       descricao: descricao,
-      valor: 0.0,
-      dataInicio: Timestamp.fromDate(dataInicio),
-      dataExpiracao: Timestamp.fromDate(dataExpiracao),
+      valor: 0,
+      dataInicio: {
+        timestamp: Timestamp.fromDate(dataInicio),
+        formatada: dataInicioFormatada,
+      },
+      dataExpiracao: {
+        timestamp: Timestamp.fromDate(dataExpiracao),
+        formatada: dataExpiracaoFormatada,
+      },
       verificado: false,
     });
 
     console.log(`Recompensa criada com sucesso: ${titulo}`);
-    return { titulo, descricao, dataInicio, dataExpiracao };
+    return { titulo, descricao, dataInicioFormatada, dataExpiracaoFormatada };
   } catch (err) {
     console.error("Erro ao criar recompensa: ", err);
     throw err;
@@ -52,53 +63,26 @@ async function cadastroRecompensa(titulo, descricao, inicio, termino) {
 }
 
 // Função para verificar recompensas expiradas
-async function verificarRecompensasExpiradas(documento) {
-  try {
-    // Verificar se o documento é válido
-    if (!documento || typeof documento.data !== "function") {
-      throw new Error("Documento inválido ou não encontrado.");
-    }
-
-    const dados = documento.data();
-
-    if (dados.dataExpiracao) {
-      // Verifique se dataExpiracao é um Timestamp do Firestore
-      const dataExpiracao =
-        typeof dados.dataExpiracao.toDate === "function"
-          ? dados.dataExpiracao.toDate()
-          : new Date(dados.dataExpiracao);
-
-      // Verifique se a data de expiração já passou
-      if (dataExpiracao < new Date()) {
-        await deleteDoc(documento.ref);
-        console.log(`Recompensa ${documento.id} deletada por expiração.`);
-      }
-    } else {
-      console.log("Nenhuma data de expiração encontrada.");
-    }
-  } catch (error) {
-    console.error(`Erro ao verificar a data de expiração: ${error}`);
-  }
-}
-
-// Função para verificar todas as recompensas e apagar as expiradas
-async function verificarTodasRecompensas() {
+async function verificarRecompensasExpiradas() {
   try {
     const colecaoRecompensas = collection(db, "Recompensas");
     const snapshot = await getDocs(colecaoRecompensas);
 
-    // Iterar por cada documento na coleção
-    snapshot.forEach((documento) => {
-      // Passe cada documento para a função de verificação
-      verificarRecompensasExpiradas(documento);
+    snapshot.forEach(async (documento) => {
+      const dados = documento.data();
+
+      if (
+        dados.dataExpiracao &&
+        dados.dataExpiracao.timestamp.toDate() < new Date()
+      ) {
+        await deleteDoc(documento.ref);
+        console.log(`Recompensa ${documento.id} deletada por expiração.`);
+      }
     });
-  } catch (error) {
-    console.error("Erro ao buscar recompensas:", error);
+  } catch (err) {
+    console.error("Erro ao verificar recompensas expiradas: ", err);
+    throw err;
   }
 }
 
-export {
-  cadastroRecompensa,
-  verificarRecompensasExpiradas,
-  verificarTodasRecompensas,
-};
+export { cadastroRecompensa, verificarRecompensasExpiradas };
