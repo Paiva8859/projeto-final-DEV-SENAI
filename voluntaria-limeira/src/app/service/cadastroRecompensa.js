@@ -1,31 +1,55 @@
 import { db } from "../SDK_FIREBASE";
-import { doc, setDoc, Timestamp } from "firebase/firestore";
-// import {cadastroRecompensa} from "@/app/service/cadastroRecompensa";
 
-async function cadastroRecompensa(titulo, descricao, dataInicio, dataFinal) {
+import {
+  doc,
+  setDoc,
+  Timestamp,
+  collection,
+  getDocs,
+  deleteDoc,
+} from "firebase/firestore";
+
+async function cadastroRecompensa(titulo, descricao, inicio, termino) {
   try {
-    const projetoId = titulo;
+    const dataInicio = new Date(inicio);
+    const dataExpiracao = new Date(termino);
 
-    // Convertendo as datas para Timestamp do Firebase
-    const dataInicioTimestamp = Timestamp.fromDate(new Date(dataInicio));
-    const dataFinalTimestamp = Timestamp.fromDate(new Date(dataFinal));
-
-    // Criação do documento no Firestore com a data de início e data final
-    await setDoc(doc(db, "Recompensas", projetoId), {
+    await setDoc(doc(db, "Recompensas", titulo), {
       titulo: titulo,
       descricao: descricao,
-      dataInicio: dataInicioTimestamp,
-      dataFinal: dataFinalTimestamp,
-      verificado: false, // Por padrão, o projeto não é verificado
+      dataInicio: Timestamp.fromDate(dataInicio),
+      dataExpiracao: Timestamp.fromDate(dataExpiracao),
+      verificado: false,
     });
 
     console.log(`Recompensa criada com sucesso: ${titulo}`);
+    return { titulo, descricao, dataInicio, dataExpiracao };
 
-    return { projetoId, titulo, descricao };
   } catch (err) {
     console.error("Erro ao criar recompensa: ", err);
     throw err;
   }
 }
 
-export default cadastroRecompensa;
+
+async function verificarRecompensasExpiradas() {
+  try {
+    const colecaoRecompensas = collection(db, "Recompensas");
+    const snapshot = await getDocs(colecaoRecompensas);
+
+    snapshot.forEach(async (documento) => {
+      const dados = documento.data();
+
+      if (dados.dataExpiracao && dados.dataExpiracao.toDate() > new Date()) {
+        await deleteDoc(documento.ref);
+        console.log(`Recompensa ${documento.id} deletada por expiração.`);
+      }
+    });
+  } catch (err) {
+    console.error("Erro ao verificar recompensas expiradas: ", err);
+    throw err;
+  }
+}
+
+export { cadastroRecompensa, verificarRecompensasExpiradas };
+

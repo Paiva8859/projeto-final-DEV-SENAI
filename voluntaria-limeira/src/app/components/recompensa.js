@@ -1,23 +1,29 @@
 "use client";
 import { useState } from "react";
 import style from "@/app/style/recompensa.module.css";
-import cadastroRecompensa from "../service/cadastroRecompensa";
+import {cadastroRecompensa} from "../service/cadastroRecompensa";
+import { useRouter } from "next/navigation";
 
 function Recompensa() {
-  const [tituloRecompensa, setTitulo] = useState("");
-  const [descricaoRecompensa, setDescricao] = useState("");
-  // const [duracaoRecompensa, setDuracao] = useState("");
-  const [dataInicio, setInicio] = useState(0);
-  const [dataFinal, setFinal] = useState(0);
-  const [mensagem, setMensagem] = useState(""); // Para mostrar mensagens de erro ou sucesso
+    const [titulo, setTitulo] = useState("");
+    const [descricao, setDescricao] = useState("");
+    const [inicio, setInicio] = useState("");
+    const [termino, setTermino] = useState("");
+    const [mensagem, setMensagem] = useState("");
+const router = useRouter()
+    const criarNova = async (e) => {
+      e.preventDefault();
 
-  // Função para validar os campos
-  const validarCampos = () => {
-    if (!tituloRecompensa || !descricaoRecompensa || !dataInicio|| !dataFinal) {
-      return "Todos os campos são obrigatórios.";
-    }
-    return ""; // Se todos os campos estão válidos
-  };
+      try {
+        // await verificarRecompensasExpiradas(); // Verifica recompensas expiradas antes de cadastrar
+        await cadastroRecompensa(titulo, descricao, inicio, termino); // Cadastra nova recompensa
+        setMensagem("Recompensa cadastrada com sucesso!");
+      } catch (err) {
+        router.push("/empresa-login")
+        console.error("Erro ao criar recompensa: ", err);
+        setMensagem("Erro ao cadastrar recompensa.");
+      }
+    };
 
 
   // Função para alternar a visibilidade do formulário usando display
@@ -38,10 +44,6 @@ function Recompensa() {
     }
   };
 
-  const criarNova = async (e) => {
-    e.preventDefault();
-    cadastroRecompensa(tituloRecompensa, descricaoRecompensa, dataInicio, dataFinal);
-  }
 
   return (
     <>
@@ -52,7 +54,7 @@ function Recompensa() {
             <input
               type="text"
               id="tituloRecompensa"
-              value={tituloRecompensa}
+              value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
               required
             />
@@ -62,7 +64,7 @@ function Recompensa() {
             <label htmlFor="descricaoRecompensa">Descrição da Recompensa</label>
             <textarea
               id="descricaoRecompensa"
-              value={descricaoRecompensa}
+              value={descricao}
               onChange={(e) => setDescricao(e.target.value)}
               required
             />
@@ -73,7 +75,7 @@ function Recompensa() {
             <input
               type="date"
               placeholder="Início"
-              value={dataInicio}
+              value={inicio}
               onChange={(e) => { setInicio(e.target.value, 0) }}
               // requires
             />
@@ -83,8 +85,8 @@ function Recompensa() {
             <input
               type="date"
               placeholder="Final"
-              value={dataFinal}
-              onChange={(e) => { setFinal(e.target.value, 0) }}
+              value={termino}
+              onChange={(e) => { setTermino(e.target.value, 0) }}
               // required
             />
           </div>

@@ -79,7 +79,6 @@ function Header() {
         <div className={style.linksNavegacao}>
           {/* Usando Link para navegação */}
           <Link href="/">Início</Link>
-          <Link href="/incentivos">Incentivos</Link>
           <Link href="/projetos">Projetos</Link>
         </div>
         {usuarioLogado ? (

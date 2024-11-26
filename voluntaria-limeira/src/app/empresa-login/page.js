@@ -21,7 +21,7 @@ function EmpresaLogin() {
       const usuarioLogado = await loginUsuario(email, senha);
       console.log(`Usuário logado com sucesso ${usuarioLogado}`);
       setMensagem(`Logado como ${usuarioLogado.email}`);
-      router.push("/projetos");
+      router.push("/");
     } catch (err) {
       setMensagem(
         "Houve um erro ao fazer o login, verifique suas credenciais."
