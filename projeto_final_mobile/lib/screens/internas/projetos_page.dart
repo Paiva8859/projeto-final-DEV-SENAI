@@ -426,11 +426,6 @@ class _ProjetosPageState extends State<ProjetosPage> {
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Image.asset(
-            'assets/imagem-de-fundo(cadastro-e-login).png', // Substitua pelo caminho correto da imagem
-            height: 275,
-            fit: BoxFit.cover,
-          ),
           BottomNavigationBar(
             currentIndex: _selectedIndex,
             type: BottomNavigationBarType.fixed,

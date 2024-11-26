@@ -15,6 +15,37 @@ class _RecompensasPageState extends State<RecompensasPage> {
   List<Map<String, dynamic>> _recompensas = [];
   bool _loading = true;
   int _selectedIndex = 2; // Definir o índice da Recompensas como selecionado
+  int _moedas = 0; // Quantidade de moedas do usuário
+
+  @override
+  void initState() {
+    super.initState();
+    _currentUser = _auth.currentUser;
+    if (_currentUser != null) {
+      _fetchRecompensas();
+      _fetchMoedas();
+    }
+  }
+
+  Future<void> _fetchMoedas() async {
+    try {
+      if (_currentUser == null) return;
+
+      String? nomeUsuario = _currentUser!.displayName;
+      if (nomeUsuario == null || nomeUsuario.isEmpty) return;
+
+      DocumentSnapshot usuarioSnapshot =
+          await _firestore.collection('Usuarios').doc(nomeUsuario).get();
+
+      setState(() {
+        final data = usuarioSnapshot.data()
+            as Map<String, dynamic>?; // Faz o cast para Map<String, dynamic>
+        _moedas = data?['moedas'] ?? 0; // Retorna 0 se não existir
+      });
+    } catch (e) {
+      print('Erro ao buscar moedas: $e');
+    }
+  }
 
   Future<void> _fetchRecompensas() async {
     try {
@@ -112,15 +143,6 @@ class _RecompensasPageState extends State<RecompensasPage> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    _currentUser = _auth.currentUser;
-    if (_currentUser != null) {
-      _fetchRecompensas();
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     int crossAxisCount = MediaQuery.of(context).size.width > 600 ? 3 : 2;
     User? user = _auth.currentUser;
@@ -130,11 +152,15 @@ class _RecompensasPageState extends State<RecompensasPage> {
         automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         elevation: 0,
-        actions: [
-          if (user != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: GestureDetector(
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Moedas: $_moedas',
+              style: TextStyle(color: Colors.orange, fontSize: 18),
+            ),
+            if (user != null)
+              GestureDetector(
                 onTap: () {
                   Navigator.pushNamed(context, '/usuario');
                 },
@@ -146,7 +172,9 @@ class _RecompensasPageState extends State<RecompensasPage> {
                   ),
                 ),
               ),
-            ),
+          ],
+        ),
+        actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.black),
             onPressed: () => _logout(context),
@@ -162,62 +190,66 @@ class _RecompensasPageState extends State<RecompensasPage> {
                   left: 0,
                   right: 0,
                   child: Image.asset(
-                    'assets/imagem-de-fundo(cadastro-e-login).png', // Caminho da imagem
+                    'assets/imagem-de-fundo(cadastro-e-login).png',
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: 300,
                   ),
                 ),
-                // Usando Expanded para garantir que o corpo ocupe o restante do espaço
                 Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Carteira',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Row(
                           children: [
-                            const Text(
-                              'Recompensas Coletadas',
-                              style: TextStyle(
+                            Text(
+                              '$_moedas',
+                              style: const TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
+                                color: Colors.orange,
                               ),
                             ),
-                            const SizedBox(height: 16),
-                            if (_recompensas.isEmpty)
-                              const Center(
-                                child: Text(
-                                  'Nenhuma recompensa coletada ainda!',
-                                  style: TextStyle(color: Colors.black54),
-                                ),
-                              ),
-                            GridView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              gridDelegate:
-                                  SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: crossAxisCount,
-                                crossAxisSpacing: 16.0,
-                                mainAxisSpacing: 16.0,
-                                childAspectRatio: 0.9,
-                              ),
-                              itemCount: _recompensas.length,
-                              itemBuilder: (context, index) {
-                                return _buildRecompensaCard(
-                                    _recompensas[index]);
-                              },
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.monetization_on,
+                              color: Colors.orange,
+                              size: 28,
                             ),
                           ],
                         ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        crossAxisSpacing: 16.0,
+                        mainAxisSpacing: 16.0,
+                        childAspectRatio: 0.9,
                       ),
+                      itemCount: _recompensas.length,
+                      itemBuilder: (context, index) {
+                        return _buildRecompensaCard(_recompensas[index]);
+                      },
                     ),
                   ],
                 ),
               ],
             ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex, // Define o índice selecionado
+        currentIndex: _selectedIndex,
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.orange,
         unselectedItemColor: Colors.black,
@@ -241,7 +273,7 @@ class _RecompensasPageState extends State<RecompensasPage> {
             label: 'Perfil',
           ),
         ],
-        onTap: _onItemTapped, // Chama a função quando o item é clicado
+        onTap: _onItemTapped,
       ),
     );
   }
