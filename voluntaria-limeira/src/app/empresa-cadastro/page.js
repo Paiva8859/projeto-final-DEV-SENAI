@@ -2,7 +2,7 @@
 
 "use client";
 
-import style from "@/app/view/style/cadastroEmpresa.module.css";
+import style from "@/app/style/cadastroEmpresa.module.css";
 import Header from "../components/header";
 import Footer from "../components/footer";
 import { useState } from "react";
