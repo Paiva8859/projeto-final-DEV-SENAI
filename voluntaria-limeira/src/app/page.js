@@ -1,6 +1,7 @@
 import Header from "./components/header";
 import Footer from "./components/footer";
 import HomeEmpresa from "./home-empresa/page";
+import Recompensa from "./components/recompensa";
 import  useAuth, { AuthProvider }  from "./service/authContext";
 
 export default function Home() {
@@ -9,7 +10,8 @@ export default function Home() {
   return (
     <AuthProvider >
       <Header />
-      <HomeEmpresa />
+      <HomeEmpresa/>
+      <Recompensa/>
       <Footer />
     </AuthProvider>
   );

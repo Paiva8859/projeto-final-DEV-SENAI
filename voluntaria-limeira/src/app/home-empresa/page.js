@@ -1,6 +1,7 @@
 import style from "@/app/style/home.module.css";
 import MobileWeb from "../components/opcoes";
 
+
 function HomeEmpresa() {
   return (
     <>

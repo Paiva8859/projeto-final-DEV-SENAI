@@ -1,4 +1,5 @@
 import { db } from "../SDK_FIREBASE";
+
 import {
   doc,
   setDoc,
@@ -23,11 +24,13 @@ async function cadastroRecompensa(titulo, descricao, inicio, termino) {
 
     console.log(`Recompensa criada com sucesso: ${titulo}`);
     return { titulo, descricao, dataInicio, dataExpiracao };
+
   } catch (err) {
     console.error("Erro ao criar recompensa: ", err);
     throw err;
   }
 }
+
 
 async function verificarRecompensasExpiradas() {
   try {
@@ -37,7 +40,7 @@ async function verificarRecompensasExpiradas() {
     snapshot.forEach(async (documento) => {
       const dados = documento.data();
 
-      if (dados.dataExpiracao && dados.dataExpiracao.toDate() < new Date()) {
+      if (dados.dataExpiracao && dados.dataExpiracao.toDate() > new Date()) {
         await deleteDoc(documento.ref);
         console.log(`Recompensa ${documento.id} deletada por expiração.`);
       }
@@ -49,3 +52,4 @@ async function verificarRecompensasExpiradas() {
 }
 
 export { cadastroRecompensa, verificarRecompensasExpiradas };
+
