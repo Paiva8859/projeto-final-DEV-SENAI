@@ -287,13 +287,22 @@ class _ProjetosPageState extends State<ProjetosPage> {
                 onTap: () {
                   Navigator.pushNamed(context, '/usuario');
                 },
-                child: CircleAvatar(
-                  backgroundColor: Colors.white,
-                  child: Text(
-                    user.displayName?.substring(0, 1).toUpperCase() ?? 'U',
-                    style: const TextStyle(
-                      color: Colors.orange,
-                      fontWeight: FontWeight.bold,
+                child: Container(
+                  padding: const EdgeInsets.all(
+                      2), // Espaço entre contorno e CircleAvatar
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                        color: Colors.tealAccent, width: 2), // Contorno preto
+                  ),
+                  child: CircleAvatar(
+                    backgroundColor: Colors.white,
+                    child: Text(
+                      user.displayName?.substring(0, 1).toUpperCase() ?? 'U',
+                      style: const TextStyle(
+                        color: Colors.orange,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
