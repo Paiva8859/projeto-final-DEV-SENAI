@@ -3,7 +3,6 @@
   height: 100%;
   display: flex;
   justify-content: center;
-  flex-direction: column;
   align-items: center;
 }
 .notFound {
@@ -13,14 +12,22 @@
 
 .projetoLista {
     height: 100%;
-    max-height: 600px;
+    max-height: 500px;
     width: 100%;
     min-width: 600px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
     overflow-y: scroll;
   list-style: none;
 }
 
 .projetoItem {
+  width: 100%;
+  height: 100%;
+  max-width: 900px;
+  max-height: 200px;
   box-shadow: 0px -1px 10px -2px rgb(161, 161, 161);
   border-radius: 15px;
   margin-bottom: 15px;
@@ -34,6 +41,9 @@
 }
 
 .imagem{
+  display: flex;
+  justify-content: center;
+  align-items: center;
     grid-column: 1;
 }
 .imagem img{
