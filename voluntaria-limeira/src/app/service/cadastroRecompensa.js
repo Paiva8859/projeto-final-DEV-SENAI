@@ -8,26 +8,23 @@ import {
   getDocs,
   deleteDoc,
 } from "firebase/firestore";
-import criarUsuario from "./criarUsuarioEmpresa";
 
 async function cadastroRecompensa(userId, titulo, descricao, inicio, termino, quantidade) {
   try {
     const dataInicio = new Date(inicio);
     const dataExpiracao = new Date(termino);
 
-    const empresaDocRef = await criarUsuario(userId);
-
     // Somando 1 dia (24 horas) à data
     dataInicio.setTime(dataInicio.getTime() + 24 * 60 * 60 * 1000);
     dataExpiracao.setTime(dataExpiracao.getTime() + 24 * 60 * 60 * 1000);
 
-    // Referencia a coleção do usuário
-    // const empresaDocRef = doc(db, "Empresa", userId);
+    // // Referencia a coleção do usuário
+    // const userDocRef = doc(db, "Usuarios", userId);
 
-    // Referencia a sub-coleção de recompensas
-    const recompensaDocRef = doc(collection( empresaDocRef, "Recompensas"), titulo);
+    // // Referencia a sub-coleção de recompensas
+    // const recompensaDocRef = doc(collection( userDocRef, "Recompensas"), titulo)
 
-    await setDoc(recompensaDocRef, {
+    await setDoc(doc(db, "Recompensa", userId), {
       titulo: titulo,
       descricao: descricao,
       dataInicio: Timestamp.fromDate(dataInicio),
