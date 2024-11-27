@@ -14,7 +14,6 @@ class _UsuarioPageState extends State<UsuarioPage> {
 
   User? _currentUser;
   Map<String, dynamic>? _userData;
-  List<Map<String, dynamic>> _missoes = [];
   List<Map<String, dynamic>> _projetos = [];
   List<Map<String, dynamic>> _projetosInscritos =
       []; // Lista para os projetos inscritos
@@ -153,6 +152,227 @@ class _UsuarioPageState extends State<UsuarioPage> {
     }
   }
 
+  Future<void> _atualizarUsuariosParticipantes(
+      List<String> usuariosParticipantes, Map<String, dynamic> projeto) async {
+    final int recompensa = projeto['recompensa'] ?? 0;
+
+    for (String usuarioId in usuariosParticipantes) {
+      try {
+        // Caminho do documento do usuário no Firestore
+        DocumentReference usuarioRef = FirebaseFirestore.instance
+            .collection('Usuarios')
+            .doc(usuarioId); // Nome do documento é o ID do usuário
+
+        // Log para verificar qual usuário está sendo atualizado
+        print('Atualizando usuário: $usuarioId');
+
+        // Obter o documento do usuário
+        DocumentSnapshot usuarioSnapshot = await usuarioRef.get();
+
+        if (usuarioSnapshot.exists) {
+          // Log para confirmar que o usuário foi encontrado no Firestore
+          print('Usuário encontrado: $usuarioId');
+
+          // Atualizar a pontuação do usuário na carteira
+          int carteiraAtual = usuarioSnapshot.get('carteira') ?? 0;
+          print('Pontuação atual na carteira de $usuarioId: $carteiraAtual');
+
+          await usuarioRef.update({'carteira': carteiraAtual + recompensa});
+          print('Pontuação atualizada para: ${carteiraAtual + recompensa}');
+        } else {
+          // Log se o usuário não for encontrado no Firestore
+          print('Usuário $usuarioId não encontrado no Firestore');
+        }
+      } catch (e) {
+        print('Erro ao atualizar o usuário $usuarioId: $e');
+      }
+    }
+  }
+
+  Future<void> _finalizarProjeto(Map<String, dynamic> projeto) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content:
+                Text('Você precisa estar logado para finalizar o projeto!'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      final criadorProjetoId = user.displayName;
+      final nomeUsuario = user.displayName ?? 'Nome desconhecido';
+
+      String? projetoId;
+
+      // 1. Listar projetos do criador
+      final projetosSnapshot = await _firestore
+          .collection('Usuarios')
+          .doc(criadorProjetoId)
+          .collection('Projetos')
+          .get();
+
+      if (projetosSnapshot.docs.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Nenhum projeto encontrado para o criador!'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      // 2. Buscar o ID do projeto
+      for (var doc in projetosSnapshot.docs) {
+        if (doc.data()['nome'] == projeto['nome']) {
+          projetoId = doc.id;
+          break;
+        }
+      }
+
+      if (projetoId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Projeto não encontrado!'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      // 3. Obter voluntários do projeto
+      final voluntariosSnapshot = await _firestore
+          .collection('Usuarios')
+          .doc(nomeUsuario)
+          .collection('Projetos')
+          .doc(projetoId)
+          .collection('Voluntarios')
+          .get();
+
+      List<String> voluntarios =
+          voluntariosSnapshot.docs.map((doc) => doc.id).toList();
+
+      if (voluntarios.isEmpty) {
+        print("Nenhum voluntário encontrado para o projeto.");
+        return;
+      }
+
+      // 4. Exibir diálogo para seleção de participantes
+      final selectedVoluntarios = await showDialog<List<String>>(
+        context: context,
+        builder: (context) {
+          final Map<String, bool> voluntariosSelecionados = {
+            for (var voluntario in voluntarios) voluntario: false,
+          };
+
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return AlertDialog(
+                title: const Text('Selecione os participantes do projeto'),
+                content: SizedBox(
+                  width: double.maxFinite,
+                  child: ListView(
+                    children: voluntariosSelecionados.keys.map((voluntario) {
+                      return CheckboxListTile(
+                        title: Text(voluntario),
+                        value: voluntariosSelecionados[voluntario],
+                        onChanged: (bool? value) {
+                          setState(() {
+                            voluntariosSelecionados[voluntario] =
+                                value ?? false;
+                          });
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(voluntariosSelecionados.entries
+                          .where((entry) => entry.value)
+                          .map((entry) => entry.key)
+                          .toList());
+                    },
+                    child: const Text('Confirmar'),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      );
+
+      if (selectedVoluntarios == null || selectedVoluntarios.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Nenhum participante foi selecionado!'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      // 5. Atribuir pontos apenas aos participantes selecionados
+      for (var voluntarioId in selectedVoluntarios) {
+        final voluntarioRef =
+            _firestore.collection('Usuarios').doc(voluntarioId);
+
+        await _firestore.runTransaction((transaction) async {
+          final voluntarioSnapshot = await transaction.get(voluntarioRef);
+
+          if (!voluntarioSnapshot.exists) {
+            throw Exception('Voluntário não encontrado.');
+          }
+
+          int carteira = voluntarioSnapshot.data()?['carteira'] ?? 0;
+
+          final projetoData = await _firestore
+              .collection('Usuarios')
+              .doc(nomeUsuario)
+              .collection('Projetos')
+              .doc(projetoId)
+              .get();
+
+          int pontosRecompensa = projetoData.data()?['recompensa'] ?? 0;
+          int novosPontos = carteira + pontosRecompensa;
+
+          transaction.update(voluntarioRef, {'carteira': novosPontos});
+          print(
+              "Pontos atribuídos ao voluntário $voluntarioId: $pontosRecompensa");
+        });
+      }
+
+      // 6. Remover o projeto
+      await _firestore
+          .collection('Usuarios')
+          .doc(criadorProjetoId)
+          .collection('Projetos')
+          .doc(projetoId)
+          .delete();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Você finalizou esse projeto!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Recarrega a lista de projetos
+      await _fetchUserData();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao finalizar projeto: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   // Enviar email de verificação de email
   Future<void> _enviarEmailVerificacao() async {
     try {
@@ -205,9 +425,6 @@ class _UsuarioPageState extends State<UsuarioPage> {
         return;
       }
 
-      QuerySnapshot missoesSnapshot =
-          await _firestore.collection('Missoes').get();
-
       List<Map<String, dynamic>> tempInscricoes = [];
       QuerySnapshot usuariosSnapshot =
           await _firestore.collection('Usuarios').get();
@@ -248,9 +465,6 @@ class _UsuarioPageState extends State<UsuarioPage> {
 
       setState(() {
         _userData = userSnapshot.data() as Map<String, dynamic>?;
-        _missoes = missoesSnapshot.docs
-            .map((doc) => doc.data() as Map<String, dynamic>)
-            .toList();
         _projetos = projetos;
         _loading = false;
       });
@@ -388,89 +602,49 @@ class _UsuarioPageState extends State<UsuarioPage> {
     );
   }
 
-  Widget _buildMissaoCard(Map<String, dynamic> missao) {
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      margin: const EdgeInsets.symmetric(vertical: 10),
-      elevation: 5,
-      child: InkWell(
-        onTap: () {},
-        borderRadius: BorderRadius.circular(12.0),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                missao['tituloMissao'] ?? 'Missão sem título',
-                style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.orange),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                missao['descricaoMissao'] ?? 'Sem descrição',
-                style: TextStyle(fontSize: 18, color: Colors.black87),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Recompensa: ${missao['recompensa'] ?? 'Sem recompensa'}',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildProjetoCard(Map<String, dynamic> projeto) {
     return Card(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(15.0),
       ),
       margin: const EdgeInsets.symmetric(vertical: 10),
       elevation: 5,
-      child: InkWell(
-        onTap: () {},
-        borderRadius: BorderRadius.circular(12.0),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                projeto['nome'] ?? 'Projeto sem nome',
-                style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.orange),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              projeto['nome'] ?? 'Projeto sem nome',
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(height: 8),
-              Text(
-                projeto['descricao'] ?? 'Sem descrição',
-                style: TextStyle(fontSize: 18, color: Colors.black87),
-              ),
-              const SizedBox(height: 8),
-              ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+            ),
+            Text(
+              'Local ou Valor: ${projeto['localOuValor'] ?? 'Não especificado'}',
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Descrição: ${projeto['descricao'] ?? 'Sem descrição'}',
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () async {
+                await _finalizarProjeto(projeto);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Text('Acessar Projeto'),
               ),
-            ],
-          ),
+              child: const Text('Finalizar Projeto'),
+            ),
+          ],
         ),
       ),
     );
@@ -564,35 +738,6 @@ class _UsuarioPageState extends State<UsuarioPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _buildUserInfoSection(),
-                              const SizedBox(height: 20),
-                              const Text(
-                                'Missões disponíveis:',
-                                style: TextStyle(
-                                    fontSize: 24, fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 12),
-                              _missoes.isEmpty
-                                  ? const Text(
-                                      'Nenhuma missão disponível',
-                                      style: TextStyle(
-                                          fontSize: 16, color: Colors.black),
-                                    )
-                                  : GridView.builder(
-                                      shrinkWrap: true,
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      gridDelegate:
-                                          const SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 2,
-                                        crossAxisSpacing: 16.0,
-                                        mainAxisSpacing: 16.0,
-                                      ),
-                                      itemCount: _missoes.length,
-                                      itemBuilder: (context, index) {
-                                        return _buildMissaoCard(
-                                            _missoes[index]);
-                                      },
-                                    ),
                               const SizedBox(height: 20),
                               const Text(
                                 'Projetos Inscritos:',

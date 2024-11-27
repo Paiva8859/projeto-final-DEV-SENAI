@@ -22,7 +22,8 @@ class _ProjetoCadastroPageState extends State<ProjetoCadastroPage> {
   // Método para fazer logout
   Future<void> _logout(BuildContext context) async {
     await _auth.signOut();
-    Navigator.pushReplacementNamed(context, '/login'); // Redireciona para a página de login
+    Navigator.pushReplacementNamed(
+        context, '/login'); // Redireciona para a página de login
   }
 
   void _onItemTapped(int index) {
@@ -53,7 +54,9 @@ class _ProjetoCadastroPageState extends State<ProjetoCadastroPage> {
           _descricaoController.text.trim().isEmpty ||
           _localOuValorController.text.trim().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Por favor, preencha todos os campos obrigatórios!')),
+          SnackBar(
+              content:
+                  Text('Por favor, preencha todos os campos obrigatórios!')),
         );
         return;
       }
@@ -64,12 +67,15 @@ class _ProjetoCadastroPageState extends State<ProjetoCadastroPage> {
         throw Exception('Usuário não autenticado');
       }
 
+      // Verifica o estado de _isVaquinha
+      print('Estado do checkbox Vaquinha: $_isVaquinha');
+
       // Cria o mapa de dados do projeto
       Map<String, dynamic> projetoData = {
         'nome': _nomeController.text.trim(),
         'descricao': _descricaoController.text.trim(),
         'localOuValor': _localOuValorController.text.trim(),
-        'vaquinha': _isVaquinha,
+        'vaquinha': _isVaquinha, // Usa o estado do checkbox
         'verificado': false,
         'tipo': 'indefinido',
       };
@@ -211,8 +217,9 @@ class _ProjetoCadastroPageState extends State<ProjetoCadastroPage> {
                               borderRadius: BorderRadius.circular(20),
                             ),
                           ),
-                          keyboardType:
-                              _isVaquinha ? TextInputType.number : TextInputType.text,
+                          keyboardType: _isVaquinha
+                              ? TextInputType.number
+                              : TextInputType.text,
                         ),
                         const SizedBox(height: 40),
 
