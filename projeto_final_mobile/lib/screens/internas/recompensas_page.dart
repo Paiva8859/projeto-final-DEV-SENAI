@@ -14,35 +14,14 @@ class _RecompensasPageState extends State<RecompensasPage> {
   User? _currentUser;
   bool _loading = true;
   int _selectedIndex = 2; // Definir o índice da Recompensas como selecionado
-  int _moedas = 0; // Quantidade de moedas do usuário
+  int _moedas = 0; // Variável para armazenar o valor das moedas
 
   @override
   void initState() {
     super.initState();
     _currentUser = _auth.currentUser;
     if (_currentUser != null) {
-      _fetchRecompensas();
       _fetchMoedas();
-    }
-  }
-
-  Future<void> _fetchMoedas() async {
-    try {
-      if (_currentUser == null) return;
-
-      String? nomeUsuario = _currentUser!.displayName;
-      if (nomeUsuario == null || nomeUsuario.isEmpty) return;
-
-      DocumentSnapshot usuarioSnapshot =
-          await _firestore.collection('Usuarios').doc(nomeUsuario).get();
-
-      setState(() {
-        final data = usuarioSnapshot.data()
-            as Map<String, dynamic>?; // Faz o cast para Map<String, dynamic>
-        _moedas = data?['moedas'] ?? 0; // Retorna 0 se não existir
-      });
-    } catch (e) {
-      print('Erro ao buscar moedas: $e');
     }
   }
 
@@ -98,27 +77,9 @@ class _RecompensasPageState extends State<RecompensasPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Recompensas',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
         automaticallyImplyLeading: false,
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.orange, Colors.red],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
         actions: [
           if (user != null)
             Padding(
@@ -128,22 +89,16 @@ class _RecompensasPageState extends State<RecompensasPage> {
                   Navigator.pushNamed(context, '/usuario');
                 },
                 child: CircleAvatar(
-                  backgroundColor: Colors.white,
+                  backgroundColor: Colors.orange.shade400,
                   child: Text(
                     user.displayName?.substring(0, 1).toUpperCase() ?? 'U',
-                    style: const TextStyle(
-                      color: Colors.orange,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
               ),
             ),
           IconButton(
-            icon: const Icon(
-              Icons.logout,
-              color: Colors.white,
-            ),
+            icon: const Icon(Icons.logout, color: Colors.black),
             onPressed: () => _logout(context),
           ),
         ],
@@ -157,66 +112,61 @@ class _RecompensasPageState extends State<RecompensasPage> {
                   left: 0,
                   right: 0,
                   child: Image.asset(
-                    'assets/imagem-de-fundo(cadastro-e-login).png',
+                    'assets/imagem-de-fundo(cadastro-e-login).png', // Caminho da imagem
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: 300,
                   ),
                 ),
+                // Usando Expanded para garantir que o corpo ocupe o restante do espaço
                 Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Carteira',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Row(
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              '$_moedas',
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.orange,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            const Icon(
-                              Icons.monetization_on,
-                              color: Colors.orange,
-                              size: 28,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Carteira:',
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      '$_moedas', // Exibe o valor das moedas
+                                      style: const TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.orange,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Icon(
+                                      Icons.monetization_on,
+                                      color: Colors.orange,
+                                      size: 28,
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossAxisCount,
-                        crossAxisSpacing: 16.0,
-                        mainAxisSpacing: 16.0,
-                        childAspectRatio: 0.9,
                       ),
-                      itemCount: _recompensas.length,
-                      itemBuilder: (context, index) {
-                        return _buildRecompensaCard(_recompensas[index]);
-                      },
                     ),
                   ],
                 ),
               ],
             ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
+        currentIndex: _selectedIndex, // Define o índice selecionado
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.orange,
         unselectedItemColor: Colors.black,
@@ -240,7 +190,7 @@ class _RecompensasPageState extends State<RecompensasPage> {
             label: 'Perfil',
           ),
         ],
-        onTap: _onItemTapped,
+        onTap: _onItemTapped, // Chama a função quando o item é clicado
       ),
     );
   }

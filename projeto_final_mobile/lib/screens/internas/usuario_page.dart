@@ -663,27 +663,9 @@ class _UsuarioPageState extends State<UsuarioPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Pagina do usuario',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
         automaticallyImplyLeading: false,
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.orange, Colors.red],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
         actions: [
           if (user != null)
             Padding(
@@ -693,22 +675,16 @@ class _UsuarioPageState extends State<UsuarioPage> {
                   Navigator.pushNamed(context, '/usuario');
                 },
                 child: CircleAvatar(
-                  backgroundColor: Colors.white,
+                  backgroundColor: Colors.orange.shade400,
                   child: Text(
                     user.displayName?.substring(0, 1).toUpperCase() ?? 'U',
-                    style: const TextStyle(
-                      color: Colors.orange,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
               ),
             ),
           IconButton(
-            icon: const Icon(
-              Icons.logout,
-              color: Colors.white,
-            ),
+            icon: const Icon(Icons.logout, color: Colors.black),
             onPressed: () => _logout(context),
           ),
         ],
