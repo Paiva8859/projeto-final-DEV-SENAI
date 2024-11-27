@@ -194,6 +194,8 @@ class _ProjetosPageState extends State<ProjetosPage> {
   }
 
   void _showDoacaoDialog(Map<String, dynamic> projeto) {
+    final TextEditingController _valorController = TextEditingController();
+
     showDialog(
       context: context,
       builder: (context) {
@@ -204,22 +206,47 @@ class _ProjetosPageState extends State<ProjetosPage> {
             children: [
               Text('Você está doando para o projeto: ${projeto['nome']}'),
               const SizedBox(height: 10),
-              // Você pode adicionar um campo de valor de doação ou outra lógica aqui.
-              ElevatedButton(
-                onPressed: () {
-                  // Lógica para fazer a doação
-                  _confirmarDoacao(projeto);
-                },
-                child: const Text('Confirmar Doação'),
+              TextField(
+                controller: _valorController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Valor da Doação (R\$)',
+                  border: OutlineInputBorder(),
+                ),
               ),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Fecha o dialog
+                Navigator.pop(context); // Fecha o diálogo
               },
               child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final valorDoacao =
+                    double.tryParse(_valorController.text) ?? 0.0;
+
+                if (valorDoacao <= 0) {
+                  // Mostra um alerta se o valor for inválido
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Insira um valor válido para a doação.'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                }
+
+                // Calcula as moedas
+                final moedasRecebidas = (valorDoacao / 10).floor();
+
+                // Mostra o diálogo de confirmação
+                Navigator.pop(context); // Fecha o diálogo atual
+                _showConfirmacaoDialog(projeto, valorDoacao, moedasRecebidas);
+              },
+              child: const Text('Enviar Doação'),
             ),
           ],
         );
@@ -227,29 +254,157 @@ class _ProjetosPageState extends State<ProjetosPage> {
     );
   }
 
-  Future<void> _confirmarDoacao(Map<String, dynamic> projeto) async {
+  void _showConfirmacaoDialog(
+      Map<String, dynamic> projeto, double valorDoacao, int moedasRecebidas) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Confirmação de Doação'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Você está doando R\$${valorDoacao.toStringAsFixed(2)} '
+                'para o projeto: ${projeto['nome']}.',
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Você receberá $moedasRecebidas ${moedasRecebidas == 1 ? 'moeda' : 'moedas'} '
+                'em sua carteira.',
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Fecha o diálogo
+              },
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // Lógica para confirmar a doação e atualizar a carteira do usuário
+                _confirmarDoacao(projeto, valorDoacao, moedasRecebidas);
+                Navigator.pop(context); // Fecha o diálogo de confirmação
+              },
+              child: const Text('Confirmar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _confirmarDoacao(Map<String, dynamic> projeto,
+      double valorDoacao, int moedasRecebidas) async {
     try {
-      final user = _auth.currentUser;
+      // Obter o usuário autenticado
+      User? user = _auth.currentUser;
+
       if (user == null) {
-        _showErrorDialog('Você precisa estar logado para fazer uma doação!');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Usuário não autenticado. Faça login para doar.'),
+            backgroundColor: Colors.red,
+          ),
+        );
         return;
       }
 
-      await _firestore
+      // Caminho do documento do projeto no Firestore
+      final projetoRef = _firestore
+          .collection('Usuarios')
+          .doc(projeto['criador']) // Campo com o nome do criador do projeto
           .collection('Projetos')
-          .doc(projeto['id'])
-          .collection('Doacoes')
-          .add({
-        'usuarioId': user.uid,
-        'valor':
-            100, // Exemplo de valor fixo, pode ser ajustado conforme necessário
-        'dataDoacao': FieldValue.serverTimestamp(),
+          .doc(projeto['id']); // Campo com o ID do projeto
+
+      // Caminho do documento do usuário no Firestore
+      final userRef = _firestore.collection('Usuarios').doc(user.displayName);
+
+      // Transação para processar a doação e verificar a vaquinha
+      await _firestore.runTransaction((transaction) async {
+        // Obter o documento do projeto (primeira leitura)
+        final projetoSnapshot = await transaction.get(projetoRef);
+
+        if (!projetoSnapshot.exists) {
+          throw Exception('Projeto não encontrado.');
+        }
+
+        // Obter valores atuais do projeto
+        final projetoData = projetoSnapshot.data();
+        double arrecadado = projetoData?['arrecadado'] ?? 0.0;
+
+        // Converter "localOuValor" para double (é armazenado como string)
+        double objetivo =
+            double.tryParse(projetoData?['localOuValor'] ?? '0') ?? 0.0;
+
+        // Obter o documento do usuário (segunda leitura)
+        final userSnapshot = await transaction.get(userRef);
+
+        if (!userSnapshot.exists) {
+          throw Exception('Usuário não encontrado.');
+        }
+
+        // Atualizar a carteira do usuário (escrita)
+        int carteiraAtual = userSnapshot.data()?['carteira'] ?? 0;
+        int novaCarteira = carteiraAtual + moedasRecebidas;
+
+        // Atualizar o valor arrecadado do projeto
+        arrecadado += valorDoacao;
+
+        // Verificar se a meta foi alcançada e, se sim, excluir o projeto
+        if (arrecadado >= objetivo) {
+          // Remover o projeto do Firestore
+          transaction.delete(projetoRef);
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  'Parabéns! O projeto ${projeto['nome']} atingiu a meta e foi finalizado.'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          // Atualizar o campo "arrecadado" (escrita)
+          transaction.update(projetoRef, {'arrecadado': arrecadado});
+        }
+
+        // Atualizar a carteira do usuário (escrita)
+        transaction.update(userRef, {'carteira': novaCarteira});
       });
 
-      _showSuccessDialog('Doação realizada com sucesso!');
+      // Exibir mensagem de sucesso
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'Doação de R\$${valorDoacao.toStringAsFixed(2)} confirmada! Você recebeu $moedasRecebidas moedas.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Registrar a doação no Firestore (opcional)
+      await _firestore
+          .collection('Usuarios')
+          .doc(user.displayName)
+          .collection('Doacoes')
+          .add({
+        'projeto': projeto['nome'],
+        'valor': valorDoacao,
+        'moedas': moedasRecebidas,
+        'data': DateTime.now(),
+      });
     } catch (e) {
-      _showErrorDialog('Erro ao realizar a doação: $e');
+      // Exibir mensagem de erro
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao processar a doação: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
+    // Recarrega a lista de projetos
+      await _fetchProjetosVerificados();
   }
 
   @override
@@ -288,16 +443,15 @@ class _ProjetosPageState extends State<ProjetosPage> {
           ? const Center(child: CircularProgressIndicator())
           : LayoutBuilder(
               builder: (context, constraints) {
-                // Define a largura máxima como 600 ou a largura da tela se for menor
+                // Define largura máxima para cards em telas maiores
                 double maxWidth = 600;
                 double width = constraints.maxWidth < maxWidth
                     ? constraints.maxWidth
                     : maxWidth;
 
                 return Center(
-                  // Centraliza o conteúdo
                   child: Container(
-                    width: width, // Largura limitada
+                    width: width,
                     child: Stack(
                       children: [
                         Positioned(
@@ -305,7 +459,7 @@ class _ProjetosPageState extends State<ProjetosPage> {
                           left: 0,
                           right: 0,
                           child: Image.asset(
-                            'assets/imagem-de-fundo(cadastro-e-login).png', // Caminho da imagem
+                            'assets/imagem-de-fundo(cadastro-e-login).png',
                             fit: BoxFit.cover,
                             width: double.infinity,
                             height: 300,
@@ -314,94 +468,98 @@ class _ProjetosPageState extends State<ProjetosPage> {
                         Column(
                           children: [
                             Expanded(
-                              child: SingleChildScrollView(
+                              child: GridView.builder(
                                 padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const SizedBox(height: 20),
-                                    ..._projetosVerificados.map((projeto) {
-                                      final isVaquinha =
-                                          projeto['vaquinha'] ?? false;
-                                      final localOuValorLabel =
-                                          isVaquinha ? 'Valor' : 'Local';
-                                      final localOuValor =
-                                          projeto['localOuValor'] ??
-                                              'Não especificado';
-
-                                      return Card(
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(15.0),
-                                        ),
-                                        margin: const EdgeInsets.symmetric(
-                                            vertical: 10),
-                                        elevation: 5,
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(16.0),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                projeto['nome'] ??
-                                                    'Título do Projeto',
-                                                style: const TextStyle(
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 10),
-                                              Text(
-                                                  'Criador: ${projeto['criador']}'),
-                                              const SizedBox(height: 8),
-                                              Text(
-                                                  '$localOuValorLabel: $localOuValor'),
-                                              const SizedBox(height: 8),
-                                              Text(
-                                                'Descrição: ${projeto['descricao'] ?? 'Sem descrição'}',
-                                                maxLines: 3,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                              const SizedBox(height: 12),
-                                              ElevatedButton(
-                                                onPressed: projeto['isInscrito']
-                                                    ? null // Se já estiver inscrito, desabilita o botão
-                                                    : () async {
-                                                        if (isVaquinha) {
-                                                          // Lógica para fazer uma doação
-                                                          _showDoacaoDialog(
-                                                              projeto);
-                                                        } else {
-                                                          // Lógica de inscrição no projeto
-                                                          await _inscreverNoProjeto(
-                                                              projeto);
-                                                        }
-                                                      },
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: projeto[
-                                                          'isInscrito']
-                                                      ? Colors
-                                                          .grey // Cor diferente para indicar que já está inscrito
-                                                      : Colors.black,
-                                                  foregroundColor: Colors.white,
-                                                ),
-                                                child: Text(
-                                                  projeto['isInscrito']
-                                                      ? 'Inscrito' // Texto do botão muda para "Inscrito"
-                                                      : (isVaquinha
-                                                          ? 'Fazer uma Doação'
-                                                          : 'Inscrever-se'),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    }).toList(),
-                                    const SizedBox(height: 20),
-                                  ],
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2, // Quantidade de colunas
+                                  crossAxisSpacing:
+                                      10, // Espaçamento horizontal
+                                  mainAxisSpacing: 10, // Espaçamento vertical
+                                  childAspectRatio:
+                                      0.8, // Proporção largura/altura
                                 ),
+                                itemCount: _projetosVerificados.length,
+                                itemBuilder: (context, index) {
+                                  final projeto = _projetosVerificados[index];
+                                  final isVaquinha =
+                                      projeto['vaquinha'] ?? false;
+                                  final localOuValorLabel =
+                                      isVaquinha ? 'Valor' : 'Local';
+                                  final localOuValor =
+                                      projeto['localOuValor'] ??
+                                          'Não especificado';
+
+                                  return Card(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15.0),
+                                    ),
+                                    elevation: 5,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            projeto['nome'] ??
+                                                'Título do Projeto',
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                              'Criador: ${projeto['criador']}'),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                              '$localOuValorLabel: $localOuValor'),
+                                          const SizedBox(height: 8),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                              'Recompensa: ${projeto['recompensa']}'),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            'Descrição: ${projeto['descricao'] ?? 'Sem descrição'}',
+                                            maxLines: 3,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const Spacer(),
+                                          ElevatedButton(
+                                            onPressed: projeto['isInscrito']
+                                                ? null
+                                                : () async {
+                                                    if (isVaquinha) {
+                                                      _showDoacaoDialog(
+                                                          projeto);
+                                                    } else {
+                                                      await _inscreverNoProjeto(
+                                                          projeto);
+                                                    }
+                                                  },
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor:
+                                                  projeto['isInscrito']
+                                                      ? Colors.grey
+                                                      : Colors.black,
+                                              foregroundColor: Colors.white,
+                                            ),
+                                            child: Text(
+                                              projeto['isInscrito']
+                                                  ? 'Inscrito'
+                                                  : (isVaquinha
+                                                      ? 'Fazer uma Doação'
+                                                      : 'Inscrever-se'),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                             ),
                           ],
@@ -414,14 +572,13 @@ class _ProjetosPageState extends State<ProjetosPage> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.pushNamed(context,
-              '/cadastro-projetos'); // Rota para a página de criação de projeto
+          Navigator.pushNamed(context, '/cadastro-projetos');
         },
         backgroundColor: Colors.orange,
         child: const Icon(Icons.add),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex, // Define o índice selecionado
+        currentIndex: _selectedIndex,
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.orange,
         unselectedItemColor: Colors.black,
@@ -445,7 +602,7 @@ class _ProjetosPageState extends State<ProjetosPage> {
             label: 'Perfil',
           ),
         ],
-        onTap: _onItemTapped, // Chama a função quando o item é clicado
+        onTap: _onItemTapped,
       ),
     );
   }
