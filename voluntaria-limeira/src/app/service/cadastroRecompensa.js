@@ -8,26 +8,36 @@ import {
   getDocs,
   deleteDoc,
 } from "firebase/firestore";
+import criarUsuario from "./criarUsuarioEmpresa";
 
-async function cadastroRecompensa(titulo, descricao, inicio, termino) {
+async function cadastroRecompensa(userId, titulo, descricao, inicio, termino, quantidade) {
   try {
     const dataInicio = new Date(inicio);
     const dataExpiracao = new Date(termino);
+
+    const empresaDocRef = await criarUsuario(userId);
 
     // Somando 1 dia (24 horas) à data
     dataInicio.setTime(dataInicio.getTime() + 24 * 60 * 60 * 1000);
     dataExpiracao.setTime(dataExpiracao.getTime() + 24 * 60 * 60 * 1000);
 
-    await setDoc(doc(db, "Recompensas", titulo), {
+    // Referencia a coleção do usuário
+    // const empresaDocRef = doc(db, "Empresa", userId);
+
+    // Referencia a sub-coleção de recompensas
+    const recompensaDocRef = doc(collection( empresaDocRef, "Recompensas"), titulo);
+
+    await setDoc(recompensaDocRef, {
       titulo: titulo,
       descricao: descricao,
       dataInicio: Timestamp.fromDate(dataInicio),
       dataExpiracao: Timestamp.fromDate(dataExpiracao),
+      quantidade: Number(quantidade),
       verificado: false,
     });
 
     console.log(`Recompensa criada com sucesso: ${titulo}`);
-    return { titulo, descricao, dataInicio, dataExpiracao };
+    return { userId, titulo, descricao, dataInicio, dataExpiracao, quantidade};
 
   } catch (err) {
     console.error("Erro ao criar recompensa: ", err);
