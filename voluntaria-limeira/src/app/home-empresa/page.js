@@ -3,6 +3,30 @@ import MobileWeb from "../components/opcoes";
 
 
 function HomeEmpresa() {
+
+    // Função para alternar a visibilidade do formulário usando display
+    const alternarFormulario = () => {
+      const empresaInfo = document.getElementById("explicacaoEmpresas");
+      const botaoEmpresa = document.getElementById("btnEmpresaInfo");
+      const usuarioInfo = document.getElementById("explicacaoUsuarios");
+      const botaoUsuario = document.getElementById("btnUsuarioInfo");
+
+      // Observa o estado/estilo atual da div 
+      const empresaStyle = window.getComputedStyle(empresaInfo);  
+      const usuarioStyle = window.getComputedStyle(usuarioInfo);  
+      
+      // Verifica o estado atual de visibilidade do formulário e alterna
+      if (botaoEmpresa.click) {
+        empresaInfo.style.display = "block";
+        usuarioInfo.style.display = "none";
+      }
+      if (botaoUsuario.click) {
+        empresaInfo.style.display = "none";
+        usuarioInfo.style.display = "block";
+      }
+
+    };
+
   return (
     <>
       <section className={style.apresentacao}>
@@ -24,10 +48,20 @@ function HomeEmpresa() {
         <div className={style.imagem}></div>
       </section>
       <section className={style.paraEmpresas}>
-        <h1 className={style.titulo}>Para empresas</h1>
-        <hr className={style.linha} />
+        <div className={style.infoEmpresaUsuario}>
+          <button id="btnEmpresaInfo" className={style.btnEmpresa}>Para Empresas</button>
+          <button id="btnUsuarioInfo" className={style.btnUsuario}>Para Usuários</button>
+        </div>
+        {/* <hr className={style.linha} /> */}
 
-        <p className={style.explicacao}>
+        <p id="explicacaoEmpresas" className={`${style.explicacaoEmpresas} explicacao`}>
+          No mundo atual, as empresas têm um papel fundamental na transformação
+          social. Ao apoiar iniciativas voluntárias, sua empresa não só
+          contribui para causas relevantes, mas também fortalece seu compromisso
+          com a responsabilidade social corporativa (RSC), engaja seus
+          colaboradores e melhora sua imagem perante consumidores e parceiros.
+        </p>
+        <p id="explicacaoUsuarios" className={`${style.explicacaoUsuarios} explicacao`}>
           No mundo atual, as empresas têm um papel fundamental na transformação
           social. Ao apoiar iniciativas voluntárias, sua empresa não só
           contribui para causas relevantes, mas também fortalece seu compromisso
