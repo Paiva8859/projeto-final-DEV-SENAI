@@ -46,10 +46,13 @@
 }
 
 .explicacao{
-    font-size: 15pt;
+    text-align: center;
+    font-size: 12pt;
     color: var(--cinza-escuro);
+    font-weight: 500;
 }
 
 .app{
     color: var(--laranja-escuro);
+    font-weight: 700;
 }
