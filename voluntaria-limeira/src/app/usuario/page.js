@@ -7,10 +7,10 @@ function Usuario(){
       <>
         <Header />
         <div className={style.alerta}>
-          <h3 className={style.titulo}>Para "Usuários" !</h3>
+          <h3 className={style.titulo}>Para &quot;Usuários&quot; !</h3>
           <p className={style.informacao}>
             Para fazer login ou cadastro você deve instalar o nosso App
-            "VoluntariaLimeiraApp". A web está disponivel apenas para
+            &quot;VoluntariaLimeiraApp&quot;. A web está disponivel apenas para
             <strong> empresas/administradores</strong>.
           </p>
         </div>
