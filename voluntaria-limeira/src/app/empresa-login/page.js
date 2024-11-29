@@ -37,7 +37,7 @@ function EmpresaLogin() {
           <form className={style.formulario}>
             <div className={style.inputLogin}>
               <p className={style.mensagem} >{mensagem}</p>
-              <h3>Torne-se um Parceiro</h3>
+              <h3>Seja Bem-Vindo Novamente!</h3>
               <input
                 type="email"
                 value={email}
@@ -56,7 +56,7 @@ function EmpresaLogin() {
             </button>
           </form>
           <div className={style.cadastro}>
-            <p>Quer se tornar um parceiro?</p>
+            <h4 style={{color:"white"}}>Torne-se Já um Parceiro!!!</h4>
 
             <button className={style.btnLogin}>Registrar</button>
           </div>

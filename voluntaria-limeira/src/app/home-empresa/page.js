@@ -57,7 +57,7 @@ function HomeEmpresa() {
         </div>
         {/* <hr className={style.linha} /> */}
 
-        <p id="explicacaoEmpresas" className={`${style.explicacaoEmpresas} explicacao`}>
+        <p id="explicacaoEmpresas" className={`${style.explicacaoEmpresas} ${style.explicacao}`}>
           No mundo atual, as empresas têm um papel fundamental na transformação
           social. Ao apoiar iniciativas voluntárias, sua empresa não só
           contribui para causas relevantes, mas também fortalece seu compromisso

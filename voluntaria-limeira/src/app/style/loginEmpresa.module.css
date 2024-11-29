@@ -13,7 +13,7 @@
   max-height: 400px;
   display: grid;
   grid-template-columns: 60% 40%;
-  box-shadow: -5px 8px 10px -3px var(--cinza-claro);
+  box-shadow: 0px 0px 40px 4px var(--cinza-claro);
 }
 
 .formulario {
@@ -34,20 +34,22 @@
   flex-direction: column;
   align-items: center;
   background-color: var(--laranja-escuro);
+  box-shadow: -15px 0px 10px -8px lightgrey;
+  border-radius: 10px;
 }
 
 .cadastro p {
   color: var(--branco);
-}
-.cadastro p {
   font-size: 1.25rem;
+  text-align: center;
 }
+
 
 .inputLogin {
   width: 100%;
   height: 100%;
   display: flex;
-  justify-content: center;
+  justify-content: space-evenly;
   flex-direction: column;
   align-items: center;
   grid-row: 1;
@@ -56,11 +58,12 @@
 .inputLogin input {
   width: 100%;
   max-width: 250px;
-  padding: 1rem;
+  height: 50px;
   outline: 0;
-  border-radius: 15px;
-  border: 3px solid var(--laranja-escuro);
-  margin-bottom: 3px;
+  border: none;
+  border-radius: 5px;
+  color: rgb(89, 89, 89);
+  background-color: #f8f8f8;  
 }
 
 .btnCadastro {
@@ -78,10 +81,15 @@
   max-width: 200px;
   height: 100%;
   max-height: 40px;
-  border-radius: 15px;
+  border-radius: 5px;
   border: none;
   color: var(--laranja-escuro);
   background-color: var(--branco);
+  transition: .2s ease-in-out;
+}
+
+.btnLogin:hover  {
+  max-width: 210px;
 }
 
 .mensagem {
