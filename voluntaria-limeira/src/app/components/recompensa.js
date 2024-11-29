@@ -112,7 +112,7 @@ function Recompensa() {
               />
             </div>
 
-            {mensagem && <p className={style.mensagem}>{mensagem}</p>}
+            {mensagem && <p style={{color:"#302f2f"}}className={style.mensagem}>{mensagem}</p>}
 
             <button className={style.btnCadastroRecompensa} onClick={criarNova}>Cadastrar</button>
           </div>
