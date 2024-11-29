@@ -215,20 +215,6 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 30),
-                          Container(
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[300],
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Center(
-                              child: Text(
-                                'Conteúdo adicional aqui',
-                                style: TextStyle(color: Colors.black54),
-                              ),
-                            ),
-                          ),
                         ],
                       ),
                     ),

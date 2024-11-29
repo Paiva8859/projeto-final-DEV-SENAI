@@ -12,78 +12,38 @@ class _RecompensasPageState extends State<RecompensasPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   User? _currentUser;
-  List<Map<String, dynamic>> _recompensas = [];
   bool _loading = true;
   int _selectedIndex = 2; // Definir o índice da Recompensas como selecionado
+  int _moedas = 0; // Variável para armazenar o valor das moedas
 
-  Future<void> _fetchRecompensas() async {
+  @override
+  void initState() {
+    super.initState();
+    _currentUser = _auth.currentUser;
+    if (_currentUser != null) {
+      _fetchMoedas();
+    }
+  }
+
+  Future<void> _fetchMoedas() async {
     try {
       if (_currentUser == null) return;
 
       String? nomeUsuario = _currentUser!.displayName;
       if (nomeUsuario == null || nomeUsuario.isEmpty) return;
 
-      QuerySnapshot recompensasSnapshot = await _firestore
-          .collection('Usuarios')
-          .doc(nomeUsuario)
-          .collection('RecompensasColetadas')
-          .get();
+      DocumentSnapshot usuarioSnapshot =
+          await _firestore.collection('Usuarios').doc(nomeUsuario).get();
 
       setState(() {
-        _recompensas = recompensasSnapshot.docs
-            .map((doc) => doc.data() as Map<String, dynamic>)
-            .toList();
+        final data = usuarioSnapshot.data() as Map<String, dynamic>?;
+        _moedas = data?['carteira'] ?? 0;
         _loading = false;
       });
     } catch (e) {
-      print('Erro ao buscar recompensas: $e');
+      print('Erro ao buscar carteira: $e');
       setState(() => _loading = false);
     }
-  }
-
-  Widget _buildRecompensaCard(Map<String, dynamic> recompensa) {
-    return Card(
-      elevation: 6,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.orange.shade200, Colors.orange.shade400],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(Icons.emoji_events, size: 40, color: Colors.white),
-              const SizedBox(height: 8),
-              Text(
-                recompensa['tituloRecompensa'] ?? 'Título não disponível',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                recompensa['descricaoRecompensa'] ?? 'Sem descrição',
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.white70,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   Future<void> _logout(BuildContext context) async {
@@ -112,17 +72,7 @@ class _RecompensasPageState extends State<RecompensasPage> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    _currentUser = _auth.currentUser;
-    if (_currentUser != null) {
-      _fetchRecompensas();
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    int crossAxisCount = MediaQuery.of(context).size.width > 600 ? 3 : 2;
     User? user = _auth.currentUser;
 
     return Scaffold(
@@ -177,36 +127,35 @@ class _RecompensasPageState extends State<RecompensasPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Recompensas Coletadas',
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            if (_recompensas.isEmpty)
-                              const Center(
-                                child: Text(
-                                  'Nenhuma recompensa coletada ainda!',
-                                  style: TextStyle(color: Colors.black54),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Carteira:',
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
-                              ),
-                            GridView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              gridDelegate:
-                                  SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: crossAxisCount,
-                                crossAxisSpacing: 16.0,
-                                mainAxisSpacing: 16.0,
-                                childAspectRatio: 0.9,
-                              ),
-                              itemCount: _recompensas.length,
-                              itemBuilder: (context, index) {
-                                return _buildRecompensaCard(
-                                    _recompensas[index]);
-                              },
+                                Row(
+                                  children: [
+                                    Text(
+                                      '$_moedas', // Exibe o valor das moedas
+                                      style: const TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.orange,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Icon(
+                                      Icons.monetization_on,
+                                      color: Colors.orange,
+                                      size: 28,
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ],
                         ),
