@@ -39,7 +39,8 @@
     height: 30px;
     width: 98%;
     border: none;
-    border-bottom: 1.5px solid var(--laranja-claro);
+    /* border-bottom: 1.5px solid var(--laranja-claro); */
+    background-color: #f0f0f0;
 }
 
 .btnCadastroRecompensa{

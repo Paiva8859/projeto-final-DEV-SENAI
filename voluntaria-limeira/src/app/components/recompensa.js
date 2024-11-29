@@ -69,7 +69,7 @@ function Recompensa() {
             <div className={style.containerInput}>
               {/* <label htmlFor="descricaoRecompensa">Descrição da Recompensa</label> */}
               <textarea
-              style={{border: '0', borderBottom: '1.5px solid orange',color:'#797979', outline:'0', fontFamily:'Gill Sans MT' }}
+              style={{border: '0', backgroundColor:'#f0f0f0',color:'#797979', outline:'0', fontFamily:'Gill Sans MT' }}
                 id="descricaoRecompensa"
                 placeholder="Descrição Recompensa"
                 value={descricao}

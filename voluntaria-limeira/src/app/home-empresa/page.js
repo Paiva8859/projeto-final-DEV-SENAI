@@ -16,14 +16,17 @@ function HomeEmpresa() {
       const usuarioStyle = window.getComputedStyle(usuarioInfo);  
       
       // Verifica o estado atual de visibilidade do formulário e alterna
-      if (botaoEmpresa.click) {
-        empresaInfo.style.display = "block";
-        usuarioInfo.style.display = "none";
-      }
-      if (botaoUsuario.click) {
-        empresaInfo.style.display = "none";
-        usuarioInfo.style.display = "block";
-      }
+      botaoEmpresa.addEventListener ("click", () => {
+
+        empresaInfo.style.display = 'block';
+        usuarioInfo.style.display = 'none';
+      })
+      
+      botaoUsuario.addEventListener ("click", () => {
+
+        empresaInfo.style.display = 'none';
+        usuarioInfo.style.display = 'block';
+      })
 
     };
 
