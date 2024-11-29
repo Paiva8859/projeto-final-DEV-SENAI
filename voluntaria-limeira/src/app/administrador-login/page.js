@@ -41,14 +41,14 @@ function AdministradorLogin() {
               <input
                 className={style.inputAdm}
                 type="email"
-                placeholder="EMAIL"
+                placeholder="E-mail"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
               <input
                 className={style.inputAdm}
                 type="password"
-                placeholder="SENHA"
+                placeholder="Senha"
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
               />

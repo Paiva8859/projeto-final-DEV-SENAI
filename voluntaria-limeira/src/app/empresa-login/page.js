@@ -45,7 +45,7 @@ function EmpresaLogin() {
                 onChange={(e) => setEmail(e.target.value)}
               />
               <input
-                type="text"
+                type="password"
                 value={senha}
                 placeholder="Senha"
                 onChange={(e) => setSenha(e.target.value)}
