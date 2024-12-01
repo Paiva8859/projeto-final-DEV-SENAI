@@ -4,17 +4,24 @@
             "outputFile": "com.example.projeto_final_mobile.app-mergeDebugResources-39:/values-en-rIN/values-en-rIN.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\DevTarde\\.gradle\\caches\\8.11.1\\transforms\\4f1df47ac46a65fb91ea407d59cd23fc\\transformed\\jetified-credentials-1.2.0-rc01\\res\\values-en-rIN\\values-en-rIN.xml",
+                    "source": "C:\\Users\\antho\\.gradle\\caches\\8.11.1\\transforms\\1eadcf4e39038947e9cebbb55363464a\\transformed\\browser-1.4.0\\res\\values-en-rIN\\values-en-rIN.xml",
                     "from": {
-                        "startLines": "2,3",
-                        "startColumns": "4,4",
-                        "startOffsets": "55,167",
-                        "endColumns": "111,113",
-                        "endOffsets": "162,276"
+                        "startLines": "2,3,4,5",
+                        "startColumns": "4,4,4,4",
+                        "startOffsets": "55,153,250,359",
+                        "endColumns": "97,96,108,98",
+                        "endOffsets": "148,245,354,453"
+                    },
+                    "to": {
+                        "startLines": "11,12,13,14",
+                        "startColumns": "4,4,4,4",
+                        "startOffsets": "1000,1098,1195,1304",
+                        "endColumns": "97,96,108,98",
+                        "endOffsets": "1093,1190,1299,1398"
                     }
                 },
                 {
-                    "source": "C:\\Users\\DevTarde\\.gradle\\caches\\8.11.1\\transforms\\ab63f795db51ab17b0b91f20c2581cc0\\transformed\\core-1.13.1\\res\\values-en-rIN\\values-en-rIN.xml",
+                    "source": "C:\\Users\\antho\\.gradle\\caches\\8.11.1\\transforms\\ab63f795db51ab17b0b91f20c2581cc0\\transformed\\core-1.13.1\\res\\values-en-rIN\\values-en-rIN.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9",
                         "startColumns": "4,4,4,4,4,4,4,4",
@@ -31,20 +38,13 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\DevTarde\\.gradle\\caches\\8.11.1\\transforms\\1eadcf4e39038947e9cebbb55363464a\\transformed\\browser-1.4.0\\res\\values-en-rIN\\values-en-rIN.xml",
+                    "source": "C:\\Users\\antho\\.gradle\\caches\\8.11.1\\transforms\\4f1df47ac46a65fb91ea407d59cd23fc\\transformed\\jetified-credentials-1.2.0-rc01\\res\\values-en-rIN\\values-en-rIN.xml",
                     "from": {
-                        "startLines": "2,3,4,5",
-                        "startColumns": "4,4,4,4",
-                        "startOffsets": "55,153,250,359",
-                        "endColumns": "97,96,108,98",
-                        "endOffsets": "148,245,354,453"
-                    },
-                    "to": {
-                        "startLines": "11,12,13,14",
-                        "startColumns": "4,4,4,4",
-                        "startOffsets": "1000,1098,1195,1304",
-                        "endColumns": "97,96,108,98",
-                        "endOffsets": "1093,1190,1299,1398"
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,167",
+                        "endColumns": "111,113",
+                        "endOffsets": "162,276"
                     }
                 }
             ]

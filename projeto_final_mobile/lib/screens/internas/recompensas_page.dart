@@ -13,8 +13,9 @@ class _RecompensasPageState extends State<RecompensasPage> {
 
   User? _currentUser;
   bool _loading = true;
-  int _selectedIndex = 2; // Definir o índice da Recompensas como selecionado
-  int _moedas = 0; // Variável para armazenar o valor das moedas
+  int _selectedIndex = 2; // Define o índice da Recompensas como selecionado
+  int _moedas = 0; // Valor da carteira do usuário
+  String? _recompensaSelecionada; // ID da recompensa selecionada
 
   @override
   void initState() {
@@ -46,152 +47,184 @@ class _RecompensasPageState extends State<RecompensasPage> {
     }
   }
 
-  Future<void> _logout(BuildContext context) async {
-    await _auth.signOut();
-    Navigator.pushReplacementNamed(context, '/login');
+  void _selecionarRecompensa(String idRecompensa) {
+    setState(() {
+      _recompensaSelecionada = idRecompensa;
+    });
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    switch (index) {
-      case 0:
-        Navigator.pushNamed(context, '/home');
-        break;
-      case 1:
-        Navigator.pushNamed(context, '/projetos');
-        break;
-      case 2:
-        Navigator.pushNamed(context, '/recompensas');
-        break;
-      case 3:
-        Navigator.pushNamed(context, '/usuario');
-        break;
+  Future<void> _comprarRecompensa() async {
+    if (_recompensaSelecionada == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Nenhuma recompensa selecionada.')),
+      );
+      return;
+    }
+
+    try {
+      // Busca os detalhes da recompensa selecionada
+      DocumentSnapshot recompensaSnapshot = await _firestore
+          .collection('Recompensas')
+          .doc(_recompensaSelecionada)
+          .get();
+
+      final recompensaData = recompensaSnapshot.data() as Map<String, dynamic>?;
+
+      if (recompensaData == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao buscar a recompensa selecionada.')),
+        );
+        return;
+      }
+
+      int preco = recompensaData['preco'] ?? 0; // Preço da recompensa
+      String titulo = recompensaData['titulo'] ?? 'Recompensa';
+
+      // Verifica se o usuário tem moedas suficientes
+      if (_moedas < preco) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Text('Você não tem moedas suficientes para comprar "$titulo".'),
+          ),
+        );
+        return;
+      }
+
+      // Subtraia o preço da recompensa das moedas do usuário
+      String? nomeUsuario = _currentUser?.displayName;
+      if (nomeUsuario == null || nomeUsuario.isEmpty) return;
+
+      await _firestore.collection('Usuarios').doc(nomeUsuario).update({
+        'carteira': _moedas - preco,
+      });
+
+      // Atualiza o estado local das moedas
+      setState(() {
+        _moedas -= preco;
+      });
+
+      // Exibe mensagem de sucesso
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Você comprou "$titulo" com sucesso!'),
+        ),
+      );
+
+      // Limpa a seleção após a compra
+      setState(() {
+        _recompensaSelecionada = null;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao comprar recompensa: $e')),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    User? user = _auth.currentUser;
-
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         elevation: 0,
         actions: [
-          if (user != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.pushNamed(context, '/usuario');
-                },
-                child: CircleAvatar(
-                  backgroundColor: Colors.orange.shade400,
-                  child: Text(
-                    user.displayName?.substring(0, 1).toUpperCase() ?? 'U',
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ),
-              ),
-            ),
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.black),
-            onPressed: () => _logout(context),
+            onPressed: () => _auth.signOut(),
           ),
         ],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : Stack(
+          : Column(
               children: [
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Image.asset(
-                    'assets/imagem-de-fundo(cadastro-e-login).png', // Caminho da imagem
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: 300,
-                  ),
-                ),
-                // Usando Expanded para garantir que o corpo ocupe o restante do espaço
-                Column(
-                  children: [
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Carteira:',
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                Row(
+                Expanded(
+                  child: StreamBuilder<QuerySnapshot>(
+                    stream: _firestore.collection('Recompensas').snapshots(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        return const Center(
+                          child: Text('Nenhuma recompensa disponível.'),
+                        );
+                      }
+
+                      final recompensas = snapshot.data!.docs;
+
+                      return ListView.builder(
+                        itemCount: recompensas.length,
+                        itemBuilder: (context, index) {
+                          final recompensa = recompensas[index];
+                          final recompensaId = recompensa.id;
+                          final data =
+                              recompensa.data() as Map<String, dynamic>;
+                          final selecionada =
+                              _recompensaSelecionada == recompensaId;
+
+                          return GestureDetector(
+                            onTap: () => _selecionarRecompensa(recompensaId),
+                            child: Card(
+                              color: selecionada
+                                  ? Colors.orange.shade100
+                                  : Colors.white,
+                              margin: const EdgeInsets.all(8.0),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      '$_moedas', // Exibe o valor das moedas
+                                      data['titulo'] ?? 'Título não disponível',
                                       style: const TextStyle(
-                                        fontSize: 24,
+                                        fontSize: 20,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.orange,
                                       ),
                                     ),
-                                    const SizedBox(width: 4),
-                                    const Icon(
-                                      Icons.monetization_on,
-                                      color: Colors.orange,
-                                      size: 28,
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Descrição: ${data['descricao'] ?? ''}',
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Quantidade: ${data['quantidade'] ?? 0}',
+                                    ),
+                                    Text(
+                                      'Data de início: ${data['dataInicio'] ?? ''}',
+                                    ),
+                                    Text(
+                                      'Data de expiração: ${data['dataExpiracao'] ?? ''}',
                                     ),
                                   ],
                                 ),
-                              ],
+                              ),
                             ),
-                          ],
-                        ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: _comprarRecompensa,
+                    child: const Text('Comprar'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12.0,
+                        horizontal: 24.0,
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex, // Define o índice selecionado
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.black,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Início',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.task),
-            label: 'Projetos',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.emoji_events),
-            label: 'Recompensas',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Perfil',
-          ),
-        ],
-        onTap: _onItemTapped, // Chama a função quando o item é clicado
-      ),
     );
   }
 }
