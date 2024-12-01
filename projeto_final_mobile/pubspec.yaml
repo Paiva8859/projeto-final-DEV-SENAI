@@ -39,11 +39,12 @@ dependencies:
   firebase_auth: ^5.3.3
   cloud_firestore: ^5.5.0
   mask_text_input_formatter: ^2.9.0
+  google_maps_flutter: ^2.10.0
+  geolocator: ^13.0.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
