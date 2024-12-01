@@ -12,78 +12,38 @@ class _RecompensasPageState extends State<RecompensasPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   User? _currentUser;
-  List<Map<String, dynamic>> _recompensas = [];
   bool _loading = true;
   int _selectedIndex = 2; // Definir o índice da Recompensas como selecionado
+  int _moedas = 0; // Variável para armazenar o valor das moedas
 
-  Future<void> _fetchRecompensas() async {
+  @override
+  void initState() {
+    super.initState();
+    _currentUser = _auth.currentUser;
+    if (_currentUser != null) {
+      _fetchMoedas();
+    }
+  }
+
+  Future<void> _fetchMoedas() async {
     try {
       if (_currentUser == null) return;
 
       String? nomeUsuario = _currentUser!.displayName;
       if (nomeUsuario == null || nomeUsuario.isEmpty) return;
 
-      QuerySnapshot recompensasSnapshot = await _firestore
-          .collection('Usuarios')
-          .doc(nomeUsuario)
-          .collection('RecompensasColetadas')
-          .get();
+      DocumentSnapshot usuarioSnapshot =
+          await _firestore.collection('Usuarios').doc(nomeUsuario).get();
 
       setState(() {
-        _recompensas = recompensasSnapshot.docs
-            .map((doc) => doc.data() as Map<String, dynamic>)
-            .toList();
+        final data = usuarioSnapshot.data() as Map<String, dynamic>?;
+        _moedas = data?['carteira'] ?? 0;
         _loading = false;
       });
     } catch (e) {
-      print('Erro ao buscar recompensas: $e');
+      print('Erro ao buscar carteira: $e');
       setState(() => _loading = false);
     }
-  }
-
-  Widget _buildRecompensaCard(Map<String, dynamic> recompensa) {
-    return Card(
-      elevation: 6,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.orange.shade200, Colors.orange.shade400],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(Icons.emoji_events, size: 40, color: Colors.white),
-              const SizedBox(height: 8),
-              Text(
-                recompensa['tituloRecompensa'] ?? 'Título não disponível',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                recompensa['descricaoRecompensa'] ?? 'Sem descrição',
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.white70,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   Future<void> _logout(BuildContext context) async {
@@ -112,35 +72,28 @@ class _RecompensasPageState extends State<RecompensasPage> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    _currentUser = _auth.currentUser;
-    if (_currentUser != null) {
-      _fetchRecompensas();
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    int crossAxisCount = MediaQuery.of(context).size.width > 600 ? 3 : 2;
+    User? user = _auth.currentUser;
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
         actions: [
-          if (_currentUser != null)
+          if (user != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: CircleAvatar(
-                backgroundColor: Colors.orange.shade400,
-                child: Text(
-                  _currentUser!.displayName?.substring(0, 1).toUpperCase() ?? 'U',
-                  style: const TextStyle(color: Colors.white),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, '/usuario');
+                },
+                child: CircleAvatar(
+                  backgroundColor: Colors.orange.shade400,
+                  child: Text(
+                    user.displayName?.substring(0, 1).toUpperCase() ?? 'U',
+                    style: const TextStyle(color: Colors.white),
+                  ),
                 ),
               ),
             ),
@@ -152,42 +105,65 @@ class _RecompensasPageState extends State<RecompensasPage> {
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Recompensas Coletadas',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+          : Stack(
+              children: [
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Image.asset(
+                    'assets/imagem-de-fundo(cadastro-e-login).png', // Caminho da imagem
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: 300,
                   ),
-                  const SizedBox(height: 16),
-                  if (_recompensas.isEmpty)
-                    const Center(
-                      child: Text(
-                        'Nenhuma recompensa coletada ainda!',
-                        style: TextStyle(color: Colors.black54),
+                ),
+                // Usando Expanded para garantir que o corpo ocupe o restante do espaço
+                Column(
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Carteira:',
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      '$_moedas', // Exibe o valor das moedas
+                                      style: const TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.orange,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Icon(
+                                      Icons.monetization_on,
+                                      color: Colors.orange,
+                                      size: 28,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  Expanded(
-                    child: GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossAxisCount,
-                        crossAxisSpacing: 16.0,
-                        mainAxisSpacing: 16.0,
-                        childAspectRatio: 0.9,
-                      ),
-                      itemCount: _recompensas.length,
-                      itemBuilder: (context, index) {
-                        return _buildRecompensaCard(_recompensas[index]);
-                      },
-                    ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              ],
             ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex, // Define o índice selecionado
