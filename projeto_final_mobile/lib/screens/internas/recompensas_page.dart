@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
 import 'dart:math';
@@ -135,7 +136,9 @@ class _RecompensasPageState extends State<RecompensasPage> {
             });
 
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Recompensa comprada com sucesso! Verifique seu e-mail.')),
+              SnackBar(
+                  content: Text(
+                      'Recompensa comprada com sucesso! Verifique seu e-mail.')),
             );
           } else {
             print(
@@ -180,8 +183,7 @@ class _RecompensasPageState extends State<RecompensasPage> {
   Future<void> _enviarEmailComChave(
       String chave, String recompensa, String descricao) async {
     final String username = 'apikey';
-    final String apiKey =
-        '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';
+    final String apiKey = dotenv.env['SENDGRID_API_KEY'] ?? '';
 
     final smtpServer = SmtpServer(
       'smtp.sendgrid.net', // Servidor SMTP do SendGrid
