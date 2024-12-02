@@ -10,56 +10,38 @@ import {
 } from "firebase/firestore";
 
 
-
-async function cadastroRecompensa(titulo, descricao, inicio, termino) {
+async function cadastroRecompensa(userId, titulo, descricao, inicio, termino, quantidade) {
   try {
-    // Construa as datas manualmente para evitar erros
-    const [diaInicio, mesInicio, anoInicio] = inicio.split("/").map(Number);
-    const [diaTermino, mesTermino, anoTermino] = termino.split("/").map(Number);
+    const dataInicio = new Date(inicio);
+    const dataExpiracao = new Date(termino);
 
-    // Cria a data no formato ano, mês (base 0), dia
-    const dataInicio = new Date(anoInicio, mesInicio - 1, diaInicio);
-    const dataExpiracao = new Date(anoTermino, mesTermino - 1, diaTermino);
+    // Somando 1 dia (24 horas) à data
+    dataInicio.setTime(dataInicio.getTime() + 24 * 60 * 60 * 1000);
+    dataExpiracao.setTime(dataExpiracao.getTime() + 24 * 60 * 60 * 1000);
 
-    // Formata as datas para o formato "dd/MM/yyyy"
-    const dataInicioFormatada = `${Number(diaInicio).padStart(2, "0")}/${Number(
-      mesInicio
-    ).padStart(2, "0")}/${anoInicio}`;
-    const dataExpiracaoFormatada = `${Number(diaTermino).padStart(
-      2,
-      "0"
-    )}/${String(mesTermino).padStart(2, "0")}/${anoTermino}`;
+    // // Referencia a coleção do usuário
+    // const userDocRef = doc(db, "Usuarios", userId);
 
+    // // Referencia a sub-coleção de recompensas
+    // const recompensaDocRef = doc(collection( userDocRef, "Recompensas"), titulo)
 
-    // Verificar se as datas fornecidas são válidas
-    if (isNaN(dataInicio.getTime()) || isNaN(dataExpiracao.getTime())) {
-      throw new Error("Data de início ou data de expiração inválida.");
-    };
-
-    // Salva a recompensa no Firestore com datas no formato string e Timestamp
-    await setDoc(doc(db, "Recompensas", titulo), {
+    await setDoc(doc(db, "Recompensa", userId), {
       titulo: titulo,
       descricao: descricao,
-
-      dataInicio: Number(dataInicioFormatada),
-      dataExpiracao: dataExpiracaoFormatada,
+      dataInicio: Timestamp.fromDate(dataInicio),
+      dataExpiracao: Timestamp.fromDate(dataExpiracao),
+      quantidade: Number(quantidade),
       verificado: false,
     });
 
     console.log(`Recompensa criada com sucesso: ${titulo}`);
+    return { userId, titulo, descricao, dataInicio, dataExpiracao, quantidade};
 
-    return {
-      titulo,
-      descricao,
-      dataInicio: dataInicioFormatada,
-      dataExpiracao: dataExpiracaoFormatada,
-    };
   } catch (err) {
     console.error("Erro ao criar recompensa: ", err);
     throw err;
   }
 }
-
 
 
 

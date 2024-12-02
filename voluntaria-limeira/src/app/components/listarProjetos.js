@@ -1,24 +1,22 @@
-import { db } from "../SDK_FIREBASE"; // Importa sua configuração do Firebase
+import { db } from "../SDK_FIREBASE"; // Configuração do Firebase
 import {
   collection,
   getDocs,
   doc,
   updateDoc,
   deleteDoc,
-} from "firebase/firestore"; // Importa métodos do Firestore
+} from "firebase/firestore"; // Métodos do Firestore
 import React, { useEffect, useState } from "react";
 import style from "@/app/style/listarProjetos.module.css"; // Estilo CSS
-import { AuthProvider, useAuth } from "../service/authContext";
+import { useAuth } from "../service/authContext"; // Contexto de autenticação
 
 function ListarProjetos() {
   const [projetos, setProjetos] = useState([]); // Estado para armazenar os projetos
   const [carregando, setCarregando] = useState(true); // Estado para controle do carregamento
-  const {tipoUsuario} = useAuth() || {};
-  const [usuario, setTipoUsuario] = useState(null);
+  const [mensagem, setMensagem] = useState("");
+  const { tipoUsuario } = useAuth() || {};
 
   useEffect(() => {
-    // Função para buscar os projetos no Firestore
-    
     const fetchProjetos = async () => {
       try {
         const usuariosRef = collection(db, "Usuarios"); // Referência à coleção de usuários
@@ -26,6 +24,7 @@ function ListarProjetos() {
 
         let todosProjetos = []; // Lista para armazenar todos os projetos
         for (const usuarioDoc of usuariosSnapshot.docs) {
+          const usuarioData = usuarioDoc.data(); // Dados do usuário
           const projetosRef = collection(
             db,
             `Usuarios/${usuarioDoc.id}/Projetos`
@@ -33,17 +32,14 @@ function ListarProjetos() {
           const projetosSnapshot = await getDocs(projetosRef);
 
           // Mapeia os projetos dessa subcoleção e adiciona na lista geral
-          
           todosProjetos = [
             ...todosProjetos,
             ...projetosSnapshot.docs.map((projetoDoc) => ({
               id: projetoDoc.id,
               ...projetoDoc.data(),
-              usuarioId: usuarioDoc.id, // Adiciona o ID do usuário relacionado
-            })).filter((projeto)=>projeto.verificado === false),
+              usuario: { id: usuarioDoc.id, ...usuarioData }, // Adiciona dados do usuário relacionado
+            })),
           ];
-
-          setProjetos(todosProjetos)
         }
 
         setProjetos(todosProjetos); // Atualiza o estado com todos os projetos
@@ -59,103 +55,125 @@ function ListarProjetos() {
 
   const aceitarProjeto = async (id) => {
     try {
-      const projetoRef = doc(
-        db,
-        `Usuarios/${projetos.find((p) => p.id === id).usuarioId}/Projetos`,
-        id
-      );
-const valor = prompt("Digite o valor que os usuários vão receber")
-console.log(valor);
+      const projeto = projetos.find((p) => p.id === id);
+      const projetoRef = doc(db, `Usuarios/${projeto.usuario.id}/Projetos`, id);
+      const valor = prompt("Digite o valor que os usuários vão receber");
+      if (!valor) return;
+
       // Atualiza o projeto no Firestore
       await updateDoc(projetoRef, {
         verificado: true,
-        recompensa: Number(valor) // Atualiza os campos necessários
+        recompensa: Number(valor), // Atualiza os campos necessários
       });
 
       // Atualiza o estado local
-      setProjetos(
-        (prevProjetos) => prevProjetos.filter((projeto) => projeto.id !== id) // Remove o projeto da lista
+      setProjetos((prevProjetos) =>
+        prevProjetos.filter((projeto) => projeto.id !== id)
       );
 
-      console.log("Projeto aprovado e removido da lista!");
+      alert("Projeto aprovado com sucesso!");
     } catch (error) {
       console.error("Erro ao aceitar o projeto:", error);
     }
   };
 
-
-  // Função para excluir o projeto ao reprovar
   const reprovarProjeto = async (id) => {
     try {
-      const projetoRef = doc(
-        db,
-        `Usuarios/${projetos.find((p) => p.id === id).usuarioId}/Projetos`,
-        id
-      ); // Corrige o caminho do documento
-      await deleteDoc(projetoRef); // Exclui o projeto da subcoleção
+      const projeto = projetos.find((p) => p.id === id);
+      const projetoRef = doc(db, `Usuarios/${projeto.usuario.id}/Projetos`, id);
+      await deleteDoc(projetoRef); // Exclui o projeto do Firestore
 
-      // Atualiza o estado para remover o projeto da lista
-      setProjetos(
-        (prevProjetos) => prevProjetos.filter((projeto) => projeto.id !== id) // Remove o projeto da lista local
+      // Atualiza o estado local
+      setProjetos((prevProjetos) =>
+        prevProjetos.filter((projeto) => projeto.id !== id)
       );
+
+      alert("Projeto recusado e excluído com sucesso!");
     } catch (error) {
-      console.error("Erro ao reprovar e excluir o projeto:", error);
+      console.error("Erro ao excluir o projeto:", error);
     }
   };
 
-  // Exibe mensagem de carregamento
+  const copiarTexto = (texto) => {
+    const textarea = document.createElement("textarea");
+    textarea.value = texto;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand("copy");
+    document.body.removeChild(textarea);
+    setMensagem("Texto copiado para a área de transferência!");
+  };
+
   if (carregando) {
     return <div>Carregando projetos...</div>;
   }
 
-  // Exibe a lista de projetos ou mensagem de erro
   return (
-    <AuthProvider>
-      <div className={style.container}>
-        {tipoUsuario === "Administrador" ? (
-          <ul className={style.projetoLista}>
-            {projetos.map((projeto) => (
-              <li key={projeto.id} className={style.projetoItem}>
-                <div className={style.projetos}>
-                  <div className={style.imagem}>
-                    <img src="/logo.png" alt="Imagem Projeto"></img>
+    <div className={style.container}>
+      {projetos.length === 0 ? (
+        <p>Nenhum projeto encontrado.</p>
+      ) : (
+        <ul className={style.projetoLista}>
+          {projetos.map((projeto) => (
+            <li key={projeto.id} className={style.projetoItem}>
+              <div className={style.projetos}>
+                <div className={style.imagem}>
+                  <img src="/logo.png" alt="Imagem do Projeto" />
+                </div>
+                <div className={style.informacoes}>
+                  <h3>{projeto.nome}</h3>
+                  <p>
+                    <strong>Descrição:</strong> {projeto.descricao}
+                  </p>
+                  <p>
+                    <strong>Local ou Valor:</strong> {projeto.localOuValor}
+                  </p>
+                  <div className={style.infoUsuario}>
+                    <p>
+                      <strong>Usuário:</strong> {projeto.usuario.email}{" "}
+                      <button title={mensagem}
+                        onClick={() => copiarTexto(projeto.usuario.email)}
+                        className={style.btnCopiar}
+                      >
+                       <img src="/copiar.png"/>
+                      </button>
+                    </p>
+                    <p>
+                      <strong>Telefone:</strong> {projeto.usuario.telefone}
+                    </p>
                   </div>
-                  <div className={style.informacoes}>
-                    <h3>{projeto.nome}</h3>
-                    <p>
-                      <strong>Descrição:</strong> {projeto.descricao}
-                    </p>
-                    <p>
-                      <strong>Local ou Valor:</strong> {projeto.localOuValor}
-                    </p>
-                    <div className={style.acoes}>
-                      <button
-                        className={style.btnRecusar}
-                        onClick={() => {
-                          reprovarProjeto(projeto.id);
-                        }}
-                      >
-                        X
-                      </button>
-                      <button
-                        className={style.btnAprovar}
-                        onClick={() => {
-                          aceitarProjeto(projeto.id);
-                        }}
-                      >
-                        ✓
-                      </button>
-                    </div>
+                  <p>
+                    {projeto.vaquinha ? (
+                      <p>
+                        <strong>R$:</strong> {projeto.localOuValor}
+                      </p>
+                    ) : (
+                      <p>
+                        <strong>Local:</strong> {projeto.localOuValor}
+                      </p>
+                    )}
+                  </p>
+                  <div className={style.acoes}>
+                    <button
+                      className={style.btnRecusar}
+                      onClick={() => reprovarProjeto(projeto.id)}
+                    >
+                      Recusar
+                    </button>
+                    <button
+                      className={style.btnAprovar}
+                      onClick={() => aceitarProjeto(projeto.id)}
+                    >
+                      Aceitar
+                    </button>
                   </div>
                 </div>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>404 not found!</p>
-        )}
-      </div>
-    </AuthProvider>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
