@@ -1,33 +1,19 @@
+"use client";
 import style from "@/app/style/home.module.css";
 import MobileWeb from "../components/opcoes";
+import { useState } from "react";
 
 
 function HomeEmpresa() {
 
-    // Função para alternar a visibilidade do formulário usando display
-    const alternarFormulario = () => {
-      const empresaInfo = document.getElementById("explicacaoEmpresas");
-      const botaoEmpresa = document.getElementById("btnEmpresaInfo");
-      const usuarioInfo = document.getElementById("explicacaoUsuarios");
-      const botaoUsuario = document.getElementById("btnUsuarioInfo");
+  // Const para alternar a visibilidade do formulário usando display
+  const [activeText, setActiveText] = useState('empresa');
+  const [activeButton, setActiveButton] = useState('empresa');
 
-      // Observa o estado/estilo atual da div 
-      const empresaStyle = window.getComputedStyle(empresaInfo);  
-      const usuarioStyle = window.getComputedStyle(usuarioInfo);  
-      
-      // Verifica o estado atual de visibilidade do formulário e alterna
-      botaoEmpresa.addEventListener ("click", () => {
-
-        empresaInfo.style.display = 'block';
-        usuarioInfo.style.display = 'none';
-      })
-      
-      botaoUsuario.addEventListener ("click", () => {
-
-        empresaInfo.style.display = 'none';
-        usuarioInfo.style.display = 'block';
-      })
-
+    // Função para gerenciar os cliques nos botões
+    const handleButtonClick = (buttonType) => {
+      setActiveButton(buttonType); // Atualiza o botão ativo
+      setActiveText(buttonType); // Atualiza o texto a ser mostrado
     };
 
   return (
@@ -52,25 +38,26 @@ function HomeEmpresa() {
       </section>
       <section className={style.paraEmpresas}>
         <div className={style.infoEmpresaUsuario}>
-          <button id="btnEmpresaInfo" className={style.btnEmpresa}>Para Empresas</button>
-          <button id="btnUsuarioInfo" className={style.btnUsuario}>Para Usuários</button>
+          <button id="btnEmpresaInfo" className={`${style.btnEmpresa}, ${activeButton === 'empresa' ? style.btnActive : ''}`} onClick={() => handleButtonClick('empresa')} >Para Empresas</button>
+          <button id="btnUsuarioInfo" className={`${style.btnUsuario}, ${activeButton === 'usuario' ? style.btnActive : ''}`} onClick={() =>handleButtonClick('usuario')} >Para Usuários</button>
         </div>
         {/* <hr className={style.linha} /> */}
-
-        <p id="explicacaoEmpresas" className={`${style.explicacaoEmpresas} ${style.explicacao}`}>
-          No mundo atual, as empresas têm um papel fundamental na transformação
-          social. Ao apoiar iniciativas voluntárias, sua empresa não só
-          contribui para causas relevantes, mas também fortalece seu compromisso
-          com a responsabilidade social corporativa (RSC), engaja seus
-          colaboradores e melhora sua imagem perante consumidores e parceiros.
-        </p>
-        <p id="explicacaoUsuarios" className={`${style.explicacaoUsuarios} explicacao`}>
-          No mundo atual, as empresas têm um papel fundamental na transformação
-          social. Ao apoiar iniciativas voluntárias, sua empresa não só
-          contribui para causas relevantes, mas também fortalece seu compromisso
-          com a responsabilidade social corporativa (RSC), engaja seus
-          colaboradores e melhora sua imagem perante consumidores e parceiros.
-        </p>
+        <div className={style.containerExplicacao}>
+          <p id="explicacaoEmpresas" className={ style.explicacao} style={{ display: activeText === 'empresa' ? 'block' : 'none' }}>
+            No mundo atual, as empresas têm um papel fundamental na transformação
+            social. Ao apoiar iniciativas voluntárias, sua empresa não só
+            contribui para causas relevantes, mas também fortalece seu compromisso
+            com a responsabilidade social corporativa (RSC), engaja seus
+            colaboradores e melhora sua imagem perante consumidores e parceiros.
+          </p>
+          <p id="explicacaoUsuarios" className={ style.explicacao} style={{ display: activeText === 'usuario' ? 'block' : 'none' }}>
+            Em um mundo cada vez mais conectado, os usuários têm a oportunidade
+            de impactar positivamente a sociedade por meio de ações voluntárias
+            e apoio a causas sociais. Ao se engajar em projetos que promovem o
+            bem-estar coletivo, eles não apenas ajudam a criar mudanças significativas,
+            mas também reforçam valores essenciais como empatia, solidariedade e cooperação.
+          </p>
+        </div>
         <MobileWeb />
       </section>
     </>

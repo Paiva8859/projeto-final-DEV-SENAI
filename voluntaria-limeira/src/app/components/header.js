@@ -85,7 +85,7 @@ function Header() {
           // Fragmento React para agrupar múltiplos elementos sem criar um nó no DOM
           <>
             <p>Bem-vindo, {usuarioLogado.email}</p>
-            <button onClick={logout}>Sair</button>
+            <button className={style.btnLogout} onClick={logout}>Sair</button>
           </>
         ) : (
           <div className={style.autenticacao}>
