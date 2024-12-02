@@ -1,0 +1,76 @@
+.container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.containerFormulario {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  flex-direction: column;
+}
+/* .containerFormulario {
+  width: 100%;
+  height: 100%;
+  max-height: 400px;
+  display: grid;
+  grid-template-columns: 60% 40%;
+} */
+
+.formulario {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, 50%);
+    justify-items: center;
+    /* box-shadow: -5px 8px 10px -3px var(--cinza-claro); */
+
+}
+
+.imagem {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  grid-column: 1;
+  box-shadow: 0px 0px 10px 3px gray;
+}
+
+.imagem img {
+  width: 100%;
+  height: 100%;
+  max-height: 400px;
+  max-width: 350px;
+}
+
+
+.inputAdm {
+  width: 100%;
+  max-width: 250px;
+  height: 50px;
+  outline: 0;
+  border: none;
+  border-radius: 5px;
+  color: rgb(89, 89, 89);
+  background-color: #f8f8f8;
+}
+
+.btnLogin{
+    width: 100%;
+    height: 100%;
+    max-width: 200px;
+    max-height: 40px;
+    border-radius: 5px;
+    color: var(--branco);
+    background-color: var(--cinza-escuro);
+    transition: .2s ease-in-out;
+}
+.btnLogin:hover{
+    max-width: 210px;
+}
