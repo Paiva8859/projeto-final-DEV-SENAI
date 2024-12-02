@@ -1,11 +1,3 @@
-.container {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-}
-
 .criarProjeto {
   width: 100%;
   height: 70%;
@@ -34,7 +26,7 @@
   justify-items: center;
 }
 
-.inputFormulario {
+.inputRecompensa {
   width: 100%;
     max-width: 250px;
   padding: 1rem;
@@ -44,7 +36,7 @@
   margin-bottom: 3px;
 }
 
-.btnCriarProjeto {
+.btnCriarRecompensa {
   grid-column: span 2; /* O botão ocupará ambas as colunas */
   width: 100%;
   max-width: 400px; /* Limita a largura do botão */

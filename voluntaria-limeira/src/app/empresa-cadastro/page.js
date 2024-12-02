@@ -2,7 +2,7 @@
 
 "use client";
 
-import style from "@/app/view/style/cadastroEmpresa.module.css";
+import style from "@/app/style/cadastroEmpresa.module.css";
 import Header from "../components/header";
 import Footer from "../components/footer";
 import { useState } from "react";
@@ -31,6 +31,10 @@ function EmpresaCadastro() {
       <Header />
       <div className={style.container}>
         <div className={style.containerFormulario}>
+          <div className={style.login}>
+            <p>Já criou sua conta?</p>
+            <button className={style.btnLogin}>Entrar</button>
+          </div>
           <form className={style.formulario} onSubmit={enviarDados}>
             <div className={style.inputCadastro}>
               <h3>Torne-se um Parceiro</h3>
@@ -67,11 +71,6 @@ function EmpresaCadastro() {
               Cadastrar
             </button>
           </form>
-          <div className={style.login}>
-            <p>Já criou sua conta?</p>
-            <p>Então faça seu login</p>
-            <button className={style.btnLogin}>Entrar</button>
-          </div>
         </div>
       </div>
       <Footer />

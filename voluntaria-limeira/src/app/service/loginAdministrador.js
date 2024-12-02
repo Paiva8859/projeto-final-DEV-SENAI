@@ -52,4 +52,4 @@ async function logado(user) {
 }
 
 
-export { loginAdministrador, logado };
+export { loginAdministrador, logado  };

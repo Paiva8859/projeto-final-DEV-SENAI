@@ -1,5 +1,5 @@
 "use client"; //para que serve isso
-import style from "@/app/view/style/administradorLogin.module.css";
+import style from "@/app/style/loginAdm.module.css";
 import Header from "../components/header";
 import Footer from "../components/footer";
 import { useState } from "react";
@@ -17,7 +17,7 @@ function AdministradorLogin() {
       const administradorLogado = await loginAdministrador(email, senha);
       console.log(`Login realizado com sucesso ${administradorLogado.email}`);
 
-      router.push("/projetos");
+      router.push("/");
       // validar que e adm, para mostrar as funcionalidades
     } catch (err) {
       console.error(`Houve um erro ao realizar o login ${err}`);
@@ -41,14 +41,14 @@ function AdministradorLogin() {
               <input
                 className={style.inputAdm}
                 type="email"
-                placeholder="EMAIL"
+                placeholder="E-mail"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
               <input
                 className={style.inputAdm}
                 type="password"
-                placeholder="SENHA"
+                placeholder="Senha"
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
               />
