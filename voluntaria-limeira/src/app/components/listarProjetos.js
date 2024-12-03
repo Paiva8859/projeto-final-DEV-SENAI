@@ -142,7 +142,7 @@ function ListarProjetos() {
                       <strong>Telefone:</strong> {projeto.usuario.telefone}
                     </p>
                   </div>
-                  <p>
+                  <div>
                     {projeto.vaquinha ? (
                       <p>
                         <strong>R$:</strong> {projeto.localOuValor}
@@ -152,7 +152,7 @@ function ListarProjetos() {
                         <strong>Local:</strong> {projeto.localOuValor}
                       </p>
                     )}
-                  </p>
+                  </div>
                   <div className={style.acoes}>
                     <button
                       className={style.btnRecusar}
