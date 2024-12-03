@@ -1,36 +1,29 @@
-import { auth, createUserWithEmailAndPassword } from "../SDK_FIREBASE"; // Firebase Auth importado do SDK
-import { doc, setDoc, getDoc } from "firebase/firestore"; // Para trabalhar com Firestore
+import { auth } from "../SDK_FIREBASE"; // Firebase Auth importado do SDK
+import {signInWithEmailAndPassword} from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore"; // Para trabalhar com Firestore
 import { db } from "../SDK_FIREBASE"; // Referência ao Firestore
 
 
 // Função para criar um novo usuário
-async function loginUsuario(nome, email, cnpj, senha) {
+async function loginUsuario(email, senha) {
   try {
     // Verificar se o email está na coleção de administradores antes de criar o usuário
     const isAdmin = await verificarEmailAdmin(email);
 
     if (isAdmin) {
       throw new Error("O email fornecido está registrado como administrador. Não é possível criar usuário.");
-    }
+    }else{
 
     // Criação do usuário autenticado no Firebase Authentication
-    const usuarioDados = await createUserWithEmailAndPassword(auth, email, senha);
+    const usuarioDados = await signInWithEmailAndPassword(auth, email, senha);
 
     if (usuarioDados != null) {
-      // Pegar o UID do usuário recém-criado
-      const userId = usuarioDados.user.uid;
-
-      // Criação do documento na coleção "Empresa" com o UID do usuário
-      await setDoc(doc(db, "Empresa", userId), {
-        nome: nome,
-        email: email,
-        cnpj: cnpj,
-        senha: senha,
-      });
+    
 
       console.log(`Usuário criado com sucesso: ${email}`);
+      return usuarioDados.user;
     }
-    return usuarioDados.user;
+  }
   } catch (err) {
     console.error("Erro ao criar usuário: ", err);
 
