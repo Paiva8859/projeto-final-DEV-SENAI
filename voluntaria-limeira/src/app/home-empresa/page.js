@@ -1,6 +1,7 @@
 "use client";
 import style from "@/app/style/home.module.css";
-import MobileWeb from "../components/opcoes";
+import { Mobile, Web } from "../components/opcoes";
+// import Web from "../components/opcoes";
 import { useState } from "react";
 
 
@@ -10,11 +11,11 @@ function HomeEmpresa() {
   const [activeText, setActiveText] = useState('empresa');
   const [activeButton, setActiveButton] = useState('empresa');
 
-    // Função para gerenciar os cliques nos botões
-    const handleButtonClick = (buttonType) => {
-      setActiveButton(buttonType); // Atualiza o botão ativo
-      setActiveText(buttonType); // Atualiza o texto a ser mostrado
-    };
+  // Função para gerenciar os cliques nos botões
+  const handleButtonClick = (buttonType) => {
+    setActiveButton(buttonType); // Atualiza o botão ativo
+    setActiveText(buttonType); // Atualiza o texto a ser mostrado
+  };
 
   return (
     <>
@@ -38,12 +39,13 @@ function HomeEmpresa() {
       </section>
       <section className={style.paraEmpresas}>
         <div className={style.infoEmpresaUsuario}>
-          <button id="btnEmpresaInfo" className={`${style.btnEmpresa}, ${activeButton === 'empresa' ? style.btnActive : ''}`} onClick={() => handleButtonClick('empresa')} >Para Empresas</button>
-          <button id="btnUsuarioInfo" className={`${style.btnUsuario}, ${activeButton === 'usuario' ? style.btnActive : ''}`} onClick={() =>handleButtonClick('usuario')} >Para Usuários</button>
+          <button id="btnEmpresaInfo" className={`${style.btnEmpresa}, ${activeButton === 'empresa' ? style.btnActive : ''}`} onClick={() => handleButtonClick('empresa')} >Para Usuários</button>
+          <button id="btnUsuarioInfo" className={`${style.btnUsuario}, ${activeButton === 'usuario' ? style.btnActive : ''}`} onClick={() => handleButtonClick('usuario')} >Para Empresas</button>
         </div>
         {/* <hr className={style.linha} /> */}
         <div className={style.containerExplicacao}>
-          <p id="explicacaoEmpresas" className={ style.explicacao} style={{ display: activeText === 'empresa' ? 'block' : 'none' }}>
+          <div className={style.explicacao}>
+            {/* <p id="explicacaoEmpresas" className={ style.explicacao} style={{ display: activeText === 'empresa' ? 'block' : 'none' }}>
             No mundo atual, as empresas têm um papel fundamental na transformação
             social. Ao apoiar iniciativas voluntárias, sua empresa não só
             contribui para causas relevantes, mas também fortalece seu compromisso
@@ -56,9 +58,13 @@ function HomeEmpresa() {
             e apoio a causas sociais. Ao se engajar em projetos que promovem o
             bem-estar coletivo, eles não apenas ajudam a criar mudanças significativas,
             mas também reforçam valores essenciais como empatia, solidariedade e cooperação.
-          </p>
+          </p> */}
+            {activeText === 'empresa' ? <Mobile /> : ''}
+            {activeText === 'usuario' ? <Web /> : ''}
+            {/* <Mobile style={{ display: activeText === 'empresa' ? 'block' : 'none' }}/>
+        <Web style={{ display: activeText === 'usuario' ? 'block' : 'none' }}/> */}
+          </div>
         </div>
-        <MobileWeb />
       </section>
     </>
   );
