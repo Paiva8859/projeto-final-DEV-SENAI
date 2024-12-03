@@ -121,8 +121,8 @@ function ListarProjetos() {
                   <img src="/logo.png" alt="Imagem do Projeto" />
                 </div>
                 <div className={style.informacoes}>
-                  <h3>{projeto.nome}</h3>
-                  <p>
+                  <h4>{projeto.nome}</h4>
+                  <p style={{ height: '30%', width: '80%', marginTop: '10px' }}>
                     <strong>Descrição:</strong> {projeto.descricao}
                   </p>
                   <p>
@@ -135,14 +135,14 @@ function ListarProjetos() {
                         onClick={() => copiarTexto(projeto.usuario.email)}
                         className={style.btnCopiar}
                       >
-                       <img src="/copiar.png"/>
+                        <img style={{ height: '10px' }} src="/copiar.png" />
                       </button>
                     </p>
                     <p>
                       <strong>Telefone:</strong> {projeto.usuario.telefone}
                     </p>
                   </div>
-                  <div>
+                  <div className={style.verificar}>
                     {projeto.vaquinha ? (
                       <p>
                         <strong>R$:</strong> {projeto.localOuValor}
@@ -152,20 +152,20 @@ function ListarProjetos() {
                         <strong>Local:</strong> {projeto.localOuValor}
                       </p>
                     )}
-                  </div>
-                  <div className={style.acoes}>
-                    <button
-                      className={style.btnRecusar}
-                      onClick={() => reprovarProjeto(projeto.id)}
-                    >
-                      Recusar
-                    </button>
-                    <button
-                      className={style.btnAprovar}
-                      onClick={() => aceitarProjeto(projeto.id)}
-                    >
-                      Aceitar
-                    </button>
+                    <div className={style.acoes}>
+                      <button
+                        className={`${style.btnRecusar} ${style.btnVerificar}`}
+                        onClick={() => reprovarProjeto(projeto.id)}
+                      >
+                        x
+                      </button>
+                      <button
+                        className={`${style.btnAprovar} ${style.btnVerificar}`}
+                        onClick={() => aceitarProjeto(projeto.id)}
+                      >
+                        ✓
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
