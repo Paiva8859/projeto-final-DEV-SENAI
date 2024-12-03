@@ -25,16 +25,16 @@ export function AuthProvider({ children }) {
 
           if (docEmpresa.exists()) {
             setTipoUsuario("Empresa");
-          } else {
-            const refAdministrador = doc(db, "Administradores", user.uid);
-            const docAdministrador = await getDoc(refAdministrador);
+          } 
 
-            if (docAdministrador.exists()) {
-              setTipoUsuario("Administrador");
-            } else {
-              setTipoUsuario("");
-            }
-          }
+          const refAdministrador = doc(db, "Administradores", user.email);
+          const docAdministrador = await getDoc(refAdministrador);
+
+          if (docAdministrador.exists()) {
+            console.log("Usuário é Administrador");
+            setTipoUsuario("Administrador");
+          } 
+
         } catch (err) {
           console.error(`Erro ao buscar dados do usuário: ${err}`);
         } finally {

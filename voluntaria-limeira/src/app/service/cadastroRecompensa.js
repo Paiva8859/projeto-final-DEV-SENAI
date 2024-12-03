@@ -4,16 +4,16 @@ import {
   doc,
   setDoc,
   Timestamp,
-  collection,
-  getDocs,
-  deleteDoc,
 } from "firebase/firestore";
+
 
 // Função para cadastro de recompensa
 async function cadastroRecompensa( titulo, descricao, inicio, termino, quantidade, preco = 0, verificado = false) {
+
   try {
     const dataInicio = new Date(inicio);
     const dataExpiracao = new Date(termino);
+
 
     // console.log("Dados a serem cadastrados:", { titulo, descricao, dataInicio, dataExpiracao, quantidade });
 
@@ -26,6 +26,7 @@ async function cadastroRecompensa( titulo, descricao, inicio, termino, quantidad
 
     // Salvar a recompensa no Firestore com um ID único baseado no título e timestamp
     await setDoc(doc(db, "Recompensa", recompensaId), {
+
       titulo: titulo,
       descricao: descricao,
       dataInicio: Timestamp.fromDate(dataInicio),
@@ -37,6 +38,7 @@ async function cadastroRecompensa( titulo, descricao, inicio, termino, quantidad
 
     console.log(`Recompensa criada com sucesso: ${titulo}`);
     return { titulo, descricao, dataInicio, dataExpiracao, quantidade, preco, verificado };
+
 
   } catch (err) {
     console.error("Erro ao criar recompensa: ", err);
@@ -64,6 +66,7 @@ async function cadastroRecompensa( titulo, descricao, inicio, termino, quantidad
 //     throw err;
 //   }
 // }
+
 
 export { cadastroRecompensa };
 

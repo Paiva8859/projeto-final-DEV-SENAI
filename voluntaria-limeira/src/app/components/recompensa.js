@@ -1,4 +1,4 @@
-"use client";
+  "use client";
 import { useState } from "react";
 import style from "@/app/style/recompensa.module.css";
 import { cadastroRecompensa } from "../service/cadastroRecompensa";
@@ -20,12 +20,14 @@ function Recompensa() {
       await cadastroRecompensa(titulo, descricao, inicio, termino, quantidade); // Cadastra nova recompensa
       setMensagem("Recompensa cadastrada com sucesso!");
 
+
       setTitulo("");
       setDescricao("");
       setInicio("");
       setTermino("");
       setQuantidade("");
       // setMensagem("");
+
     } catch (err) {
       router.push("/empresa-login")
       console.error("Erro ao criar recompensa: ", err);
@@ -47,6 +49,8 @@ function Recompensa() {
       formulario.style.display = "flex";
       botao.textContent = "x";
 
+
+
     } else {
       formulario.style.display = "none";
       botao.textContent = "+";
@@ -59,6 +63,7 @@ function Recompensa() {
       <div className={style.sectionRecompensa}>
         <form id="formRecompensa" className={style.form}>
           <h2 style={{ margin: 0 }}>Cadastre Recompensa</h2>
+
           {mensagem && <p style={{ color: "#302f2f" }} className={style.mensagem}>{mensagem}</p>}
           <div className={style.infoForm}>
             <div className={style.containerInput}>
@@ -68,6 +73,7 @@ function Recompensa() {
                 type="text"
                 id="tituloRecompensa"
                 // placeholder="Título Recompensa"
+
                 value={titulo}
                 onChange={(e) => setTitulo(e.target.value)}
                 required
@@ -75,11 +81,13 @@ function Recompensa() {
             </div>
 
             <div className={style.containerInput}>
+
               <label style={{ color: '#797979', outline: '0', fontSize: '10px' }} htmlFor="descricao">Descrição</label>
               <textarea
                 style={{ border: '0', backgroundColor: '#f0f0f0', color: '#797979', outline: '0', fontFamily: 'Gill Sans MT' }}
                 id="descricaoRecompensa"
                 // placeholder="Descrição Recompensa"
+
                 value={descricao}
                 onChange={(e) => setDescricao(e.target.value)}
                 required
@@ -87,6 +95,7 @@ function Recompensa() {
             </div>
 
             <div className={style.containerInput}>
+
               <label style={{ color: '#797979', outline: '0', fontSize: '10px' }} htmlFor="dataInicio">Início</label>
               <input
                 style={{ color: '#797979', outline: '0' }}
@@ -94,10 +103,12 @@ function Recompensa() {
                 // placeholder="Início"
                 value={inicio}
                 onChange={(e) => { setInicio(e.target.value) }}
+
               // requires
               />
             </div>
             <div className={style.containerInput}>
+
               <label style={{ color: '#797979', outline: '0', fontSize: '10px' }} htmlFor="dataFinal">Final</label>
               <input
                 style={{ color: '#797979', outline: '0' }}
@@ -105,10 +116,12 @@ function Recompensa() {
                 // title="Final"
                 value={termino}
                 onChange={(e) => { setTermino(e.target.value) }}
+
               // required
               />
             </div>
             <div className={style.containerInput}>
+
               <label style={{ color: '#797979', outline: '0', fontSize: '10px' }} htmlFor="qunatidade">Quantidade</label>
               <input
                 style={{ color: '#797979', outline: '0' }}
@@ -121,6 +134,7 @@ function Recompensa() {
                   const numero = value ? Number(value) : 0;  // Se não for um valor válido, define como 0
                   setQuantidade(numero);
                 }}
+
               // required
               />
             </div>
@@ -130,6 +144,7 @@ function Recompensa() {
               <br></br>
               <button className={style.btnCadastroRecompensa} onClick={criarNova}>Cadastrar</button>
             </div>
+
           </div>
         </form>
       </div>

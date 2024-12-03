@@ -3,15 +3,15 @@
 import Footer from "../components/footer";
 import Header from "../components/header";
 import style from "@/app/style/projetos.module.css";
-import ListarProjetos from "../components/listarProjetos";
+import ListarRecompensas from "../components/listarRecompensas";
 
-function Projetos() {
-
+function RecompensasListadas() {
   return (
     <>
+
       <Header />
       <div className={style.container}>
-      <ListarProjetos/>
+        <ListarRecompensas/>
         <hr />
       </div>
       <Footer />
@@ -19,4 +19,4 @@ function Projetos() {
   );
 }
 
-export default Projetos;
+export default RecompensasListadas;
