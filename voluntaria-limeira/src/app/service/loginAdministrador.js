@@ -52,4 +52,6 @@ async function verificarEmailAdmin(email) {
   }
 }
 
+
+
 export default loginAdministrador;

@@ -37,9 +37,7 @@ function EmpresaLogin() {
           <form className={style.formulario}>
             <div className={style.inputLogin}>
               <p className={style.mensagem} >{mensagem}</p>
-
-              <h3>Seja Bem-Vindo Novamente!</h3>
-
+              <h3>Torne-se um Parceiro</h3>
               <input
                 type="email"
                 value={email}
@@ -47,7 +45,7 @@ function EmpresaLogin() {
                 onChange={(e) => setEmail(e.target.value)}
               />
               <input
-                type="password"
+                type="text"
                 value={senha}
                 placeholder="Senha"
                 onChange={(e) => setSenha(e.target.value)}
@@ -58,7 +56,7 @@ function EmpresaLogin() {
             </button>
           </form>
           <div className={style.cadastro}>
-            <h4 style={{color:"white"}}>Torne-se Já um Parceiro!!!</h4>
+            <p>Quer se tornar um parceiro?</p>
 
             <button className={style.btnLogin}>Registrar</button>
           </div>

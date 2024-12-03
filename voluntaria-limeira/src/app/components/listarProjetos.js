@@ -6,18 +6,19 @@ import {
   updateDoc,
   deleteDoc,
 } from "firebase/firestore"; // Métodos do Firestore
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import React, { useEffect, useState } from "react";
 import style from "@/app/style/listarProjetos.module.css"; // Estilo CSS
-import { useAuth } from "../service/authContext"; // Contexto de autenticação
 
 function ListarProjetos() {
   const [projetos, setProjetos] = useState([]); // Estado para armazenar os projetos
   const [carregando, setCarregando] = useState(true); // Estado para controle do carregamento
   const [mensagem, setMensagem] = useState("");
-  const { tipoUsuario } = useAuth() || {};
+  const [tipoUsuario, setTipoUsuario] = useState("");
 
   useEffect(() => {
     const fetchProjetos = async () => {
+      pegarUsuarioLogado();
       try {
         const usuariosRef = collection(db, "Usuarios"); // Referência à coleção de usuários
         const usuariosSnapshot = await getDocs(usuariosRef); // Busca todos os usuários
@@ -31,7 +32,6 @@ function ListarProjetos() {
           ); // Referência à subcoleção `Projetos`
           const projetosSnapshot = await getDocs(projetosRef);
 
-          // Mapeia os projetos dessa subcoleção e adiciona na lista geral
           todosProjetos = [
             ...todosProjetos,
             ...projetosSnapshot.docs.map((projetoDoc) => ({
@@ -52,6 +52,37 @@ function ListarProjetos() {
 
     fetchProjetos();
   }, []);
+const verificarEmailAdmin = async (email)=> {
+  const docRef = doc(db, "Administradores", email); // Buscando pelo email do usuário autenticado
+  const docSnap = await getDoc(docRef); // Obtém os dados do documento
+
+  if (docSnap.exists()) {
+    console.log("Dados encontrados:", docSnap.data());
+    return true; // Email encontrado no Firestore como administrador
+  } else {
+    console.error("Nenhum dado foi encontrado.");
+    return false; // Não encontrado como administrador
+  }
+}
+  // Função para pegar o usuário logado
+  function pegarUsuarioLogado() {
+    const auth = getAuth();
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // O usuário está logado
+        console.log("Usuário logado: ", user.email);
+        if (user.email) {
+          
+        }
+        setTipoUsuario()
+        // Aqui você pode pegar outras informações, como user.uid, user.displayName, etc.
+      } else {
+        // Nenhum usuário logado
+        console.log("Nenhum usuário logado.");
+      }
+    });
+  }
 
   const aceitarProjeto = async (id) => {
     try {
@@ -60,13 +91,11 @@ function ListarProjetos() {
       const valor = prompt("Digite o valor que os usuários vão receber");
       if (!valor) return;
 
-      // Atualiza o projeto no Firestore
       await updateDoc(projetoRef, {
         verificado: true,
-        recompensa: Number(valor), // Atualiza os campos necessários
+        recompensa: Number(valor),
       });
 
-      // Atualiza o estado local
       setProjetos((prevProjetos) =>
         prevProjetos.filter((projeto) => projeto.id !== id)
       );
@@ -81,9 +110,8 @@ function ListarProjetos() {
     try {
       const projeto = projetos.find((p) => p.id === id);
       const projetoRef = doc(db, `Usuarios/${projeto.usuario.id}/Projetos`, id);
-      await deleteDoc(projetoRef); // Exclui o projeto do Firestore
+      await deleteDoc(projetoRef);
 
-      // Atualiza o estado local
       setProjetos((prevProjetos) =>
         prevProjetos.filter((projeto) => projeto.id !== id)
       );
@@ -131,11 +159,12 @@ function ListarProjetos() {
                   <div className={style.infoUsuario}>
                     <p>
                       <strong>Usuário:</strong> {projeto.usuario.email}{" "}
-                      <button title={mensagem}
+                      <button
+                        title={mensagem}
                         onClick={() => copiarTexto(projeto.usuario.email)}
                         className={style.btnCopiar}
                       >
-                       <img src="/copiar.png"/>
+                        <img src="/copiar.png" />
                       </button>
                     </p>
                     <p>
@@ -153,6 +182,7 @@ function ListarProjetos() {
                       </p>
                     )}
                   </div>
+                  {/* {tipoUsuario === "adm" && ( // Exibe botões apenas se o usuário for administrador */}
                   <div className={style.acoes}>
                     <button
                       className={style.btnRecusar}
@@ -167,6 +197,7 @@ function ListarProjetos() {
                       Aceitar
                     </button>
                   </div>
+                  {/* )} */}
                 </div>
               </div>
             </li>
