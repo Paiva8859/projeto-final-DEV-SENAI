@@ -511,19 +511,19 @@ class _ProjetosPageState extends State<ProjetosPage> {
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                           ),
-                                          const SizedBox(height: 8),
+                                          const SizedBox(height: 6),
                                           Text(
                                               'Criador: ${projeto['criador']}'),
-                                          const SizedBox(height: 8),
+                                          const SizedBox(height: 6),
                                           Text(
                                               '$localOuValorLabel: $localOuValor'),
-                                          const SizedBox(height: 8),
-                                          const SizedBox(height: 8),
+                                          const SizedBox(height: 6),
+                                          const SizedBox(height: 6),
                                           Text(
                                               'Recompensa: ${projeto['recompensa']}'),
-                                          const SizedBox(height: 8),
+                                          const SizedBox(height: 6),
                                           Text(
-                                            'Descrição: ${projeto['descricao'] ?? 'Sem descrição'}',
+                                            '${projeto['descricao'] ?? 'Sem descrição'}',
                                             maxLines: 3,
                                             overflow: TextOverflow.ellipsis,
                                           ),
