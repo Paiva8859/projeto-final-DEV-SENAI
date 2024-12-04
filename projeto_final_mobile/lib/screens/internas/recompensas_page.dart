@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:mailer/mailer.dart';
+import 'package:mailer/smtp_server.dart';
+import 'dart:math';
 
 class RecompensasPage extends StatefulWidget {
   @override
@@ -14,7 +18,9 @@ class _RecompensasPageState extends State<RecompensasPage> {
   User? _currentUser;
   bool _loading = true;
   int _selectedIndex = 2; // Definir o índice da Recompensas como selecionado
-  int _moedas = 0; // Variável para armazenar o valor das moedas
+  num _moedas = 0; // Variável para armazenar o valor das moedas
+  List<Map<String, dynamic>> _recompensas =
+      []; // Lista de recompensas disponíveis
 
   @override
   void initState() {
@@ -22,6 +28,7 @@ class _RecompensasPageState extends State<RecompensasPage> {
     _currentUser = _auth.currentUser;
     if (_currentUser != null) {
       _fetchMoedas();
+      _fetchRecompensas();
     }
   }
 
@@ -43,6 +50,167 @@ class _RecompensasPageState extends State<RecompensasPage> {
     } catch (e) {
       print('Erro ao buscar carteira: $e');
       setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _fetchRecompensas() async {
+    try {
+      // Filtra as recompensas para incluir apenas aquelas com 'verificado: true'
+      QuerySnapshot recompensasSnapshot = await _firestore
+          .collection('Recompensa')
+          .where('verificado', isEqualTo: true)
+          .get();
+
+      List<Map<String, dynamic>> recompensasList = [];
+      for (var doc in recompensasSnapshot.docs) {
+        var data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id; // Adiciona o ID do documento
+
+        // Apenas processa as recompensas que possuem os dados necessários
+        if (data['titulo'] != null &&
+            data['preco'] is num &&
+            data['quantidade'] is num &&
+            data['descricao'] != null) {
+          recompensasList.add(data);
+          print(
+              'Recompensa carregada: ${data['titulo']}'); // Log para verificar
+        } else {
+          print('Dados inválidos ou ausentes: $data');
+        }
+      }
+
+      setState(() {
+        _recompensas = recompensasList;
+      });
+    } catch (e) {
+      print('Erro ao buscar recompensas: $e');
+    }
+  }
+
+  Future<void> _comprarRecompensa(Map<String, dynamic> recompensa) async {
+    if (recompensa['preco'] is num && _moedas >= recompensa['preco']) {
+      try {
+        String? nomeUsuario = _currentUser!.displayName;
+        if (nomeUsuario == null || nomeUsuario.isEmpty) return;
+
+        if (recompensa['quantidade'] is num && recompensa['quantidade'] > 0) {
+          await _firestore.collection('Usuarios').doc(nomeUsuario).update({
+            'carteira': _moedas - recompensa['preco'],
+          });
+
+          await _firestore
+              .collection('Usuarios')
+              .doc(nomeUsuario)
+              .collection('RecompensasCompradas')
+              .add({
+            'recompensa': recompensa['titulo'],
+            'data': Timestamp.now(),
+          });
+
+          DocumentSnapshot recompensasDoc = await _firestore
+              .collection('Recompensa')
+              .doc(recompensa['id'])
+              .get();
+
+          if (recompensasDoc.exists) {
+            // Atualiza a quantidade
+            if (recompensa['quantidade'] > 1) {
+              await _firestore
+                  .collection('Recompensa')
+                  .doc(recompensa['id'])
+                  .update({'quantidade': FieldValue.increment(-1)});
+            } else {
+              // Se a quantidade for 1, exclui a recompensa do banco
+              await _firestore
+                  .collection('Recompensa')
+                  .doc(recompensa['id'])
+                  .delete();
+            }
+
+            String chave = _gerarChaveUnica();
+            await _enviarEmailComChave(
+                chave, recompensa['titulo'], recompensa['descricao']);
+
+            setState(() {
+              _moedas -= recompensa['preco'];
+            });
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text(
+                      'Recompensa comprada com sucesso! Verifique seu e-mail.')),
+            );
+          } else {
+            print(
+                'Recompensa não encontrada no Firestore: ${recompensa['id']}');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('A recompensa não está mais disponível.')),
+            );
+          }
+        } else {
+          print(
+              'Quantidade inválida ou esgotada para a recompensa: ${recompensa['titulo']}');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Quantidade inválida ou esgotada!')),
+          );
+        }
+      } catch (e) {
+        print('Erro ao comprar recompensa: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ocorreu um erro ao processar a compra!')),
+        );
+      }
+    } else {
+      print(
+          'Moedas insuficientes ou preço inválido para a recompensa: ${recompensa['titulo']}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Você não tem moedas suficientes!')),
+      );
+    }
+    _fetchRecompensas();
+  }
+
+  String _gerarChaveUnica() {
+    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    Random random = Random();
+    String chave = '';
+    for (int i = 0; i < 8; i++) {
+      chave += charset[random.nextInt(charset.length)];
+    }
+    return chave;
+  }
+
+  Future<void> _enviarEmailComChave(
+      String chave, String recompensa, String descricao) async {
+    final String username = 'apikey';
+    final String apiKey = dotenv.env['SENDGRID_API_KEY'] ?? '';
+
+    final smtpServer = SmtpServer(
+      'smtp.sendgrid.net', // Servidor SMTP do SendGrid
+      port: 587,
+      username: username,
+      password: apiKey,
+    );
+
+    // Criação do e-mail
+    final message = Message()
+      ..from = Address('voluntarialimeira@gmail.com', 'Voluntaria Limeira')
+      ..recipients.add(_currentUser!.email ?? '') // Destinatário do e-mail
+      ..subject = 'Chave de Recompensa'
+      ..text = '''
+Sua chave única para a recompensa "${recompensa}" é: ${chave}
+
+Descrição da Recompensa: ${descricao}
+
+De ajuda em ajuda o mundo se torna melhor!
+''';
+
+    try {
+      // Enviar o e-mail
+      final sendReport = await send(message, smtpServer);
+      print('Email enviado: ${sendReport.toString()}');
+    } catch (e) {
+      print('Erro ao enviar e-mail: $e');
     }
   }
 
@@ -131,7 +299,7 @@ class _RecompensasPageState extends State<RecompensasPage> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'Carteira:',
+                                  'Carteira: ',
                                   style: TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.w500,
@@ -156,6 +324,45 @@ class _RecompensasPageState extends State<RecompensasPage> {
                                   ],
                                 ),
                               ],
+                            ),
+                            const SizedBox(height: 20),
+                            Text(
+                              'Recompensas Disponíveis:',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: _recompensas.length,
+                              itemBuilder: (context, index) {
+                                var recompensa = _recompensas[index];
+                                return Card(
+                                  margin:
+                                      const EdgeInsets.symmetric(vertical: 8),
+                                  child: ListTile(
+                                    title: Text(recompensa['titulo'] ??
+                                        'Título da recompensa'),
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                            'Preço: ${recompensa['preco']} moedas'),
+                                        Text(
+                                            'Descrição: ${recompensa['descricao']}'),
+                                      ],
+                                    ),
+                                    trailing: IconButton(
+                                      icon: Icon(Icons.shopping_cart),
+                                      onPressed: () =>
+                                          _comprarRecompensa(recompensa),
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),
