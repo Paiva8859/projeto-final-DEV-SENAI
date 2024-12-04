@@ -12,8 +12,13 @@ import 'package:projeto_final_mobile/screens/login_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  await dotenv.load();
+
+  try {
+    await Firebase.initializeApp();
+    await dotenv.load();
+  } catch (e) {
+    print('Erro ao inicializar o Firebase ou carregar o dotenv: $e');
+  }
 
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
@@ -26,7 +31,7 @@ void main() async {
       '/projetos': (context) => ProjetosPage(),
       '/usuario': (context) => UsuarioPage(),
       '/recompensas': (context) => RecompensasPage(),
-       '/editarUsuario': (context) => EditarUsuarioPage(),
+      '/editarUsuario': (context) => EditarUsuarioPage(),
     },
   ));
 }
