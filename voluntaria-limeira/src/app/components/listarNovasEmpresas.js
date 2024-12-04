@@ -10,7 +10,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { db } from "../SDK_FIREBASE"; // Certifique-se de ajustar o caminho se necessário
-import style from "@/app/style/listarRecompensas.module.css";
+import style from "@/app/style/listarEmpresa.module.css";
 
 function ListarNovasEmpresas() {
   const [empresas, setEmpresas] = useState([]);
@@ -117,15 +117,15 @@ function ListarNovasEmpresas() {
               <div className={style.botoes}>
                 <button
                   className={style.btnRecusar}
-                  onClick={() => handleAceitar(empresa.id)}
+                  onClick={() => handleRecusar(empresa.id)}
                 >
-                  Aceitar
+                  x
                 </button>
                 <button
                   className={style.btnAprovar}
-                  onClick={() => handleRecusar(empresa.id)}
+                  onClick={() => handleAceitar(empresa.id)}
                 >
-                  Recusar
+                  ✓
                 </button>
               </div>
             </li>
