@@ -1,5 +1,4 @@
 "use client";
-import style from "@/app/style/cadastroRecompensa.module.css";
 import { useState } from "react";
 import {
   cadastroRecompensa,
