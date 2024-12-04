@@ -1,3 +1,4 @@
+import { signOut } from "firebase/auth";
 import { auth, createUserWithEmailAndPassword, db } from "../SDK_FIREBASE";
 import { doc, setDoc } from "firebase/firestore";
 
@@ -19,9 +20,11 @@ async function criarUsuario(nome, email, cnpj, senha) {
         email: email,
         cnpj: cnpj,
         senha: senha,
+        verificado: false 
       });
 
       console.log(`Usuário criado com sucesso: ${email}`);
+      await signOut(auth)
     }
     return usuarioDados.user;
   } catch (err) {

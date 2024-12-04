@@ -4,7 +4,7 @@ import Header from "../components/header";
 import Footer from "../components/footer";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {loginAdministrador} from "../service/loginAdministrador";
+import loginAdministrador from "../service/loginAdministrador";
 
 function AdministradorLogin() {
   const router = useRouter();
