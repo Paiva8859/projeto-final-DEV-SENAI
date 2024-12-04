@@ -1,5 +1,5 @@
 import { auth } from "../SDK_FIREBASE"; // Firebase Auth importado do SDK
-import {signInWithEmailAndPassword} from "firebase/auth";
+import {signInWithEmailAndPassword, signOut} from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore"; // Para trabalhar com Firestore
 import { db } from "../SDK_FIREBASE"; // Referência ao Firestore
 
@@ -14,18 +14,29 @@ async function loginUsuario(email, senha) {
       throw new Error("O email fornecido está registrado como administrador. Não é possível criar usuário.");
     }else{
 
-    // Criação do usuário autenticado no Firebase Authentication
     const usuarioDados = await signInWithEmailAndPassword(auth, email, senha);
 
     if (usuarioDados != null) {
-    
+    const usuarioRef = doc(db, "Empresa", usuarioDados.user.uid);
+    const usuarioSnap = await getDoc(usuarioRef);
 
-      console.log(`Usuário criado com sucesso: ${email}`);
+    if (usuarioSnap.exists()) {
+      const usuarioData = usuarioSnap.data();
+
+      if (usuarioData.verificado === true) {
+        return usuarioDados.user;
+      }else{
+        signOut(usuarioDados.user)
+        console.error("Usuário não verificado.")
+        throw Error("Usuario não verificado pelo Administrador.", email)
+      }
+    }
+      console.log(`Usuário criado com sucesso: ${email} ${usuarioDados.user.verificado}`);
       return usuarioDados.user;
     }
   }
   } catch (err) {
-    console.error("Erro ao criar usuário: ", err);
+    console.error("Erro ao fazer login: ", err);
 
     // Resetar dados de autenticação se houver um erro
     signOut(auth).catch(signOutError => {

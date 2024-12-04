@@ -2,16 +2,20 @@ import { db } from "../SDK_FIREBASE"; // Importa sua configuração do Firebase
 import {
   collection,
   getDocs,
+  getDoc,
   doc,
   deleteDoc,
   updateDoc,
 } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import React, { useEffect, useState } from "react";
 import style from "@/app/style/listarRecompensas.module.css";
 
 function ListarRecompensas() {
   const [recompensas, setRecompensas] = useState([]);
   const [carregando, setCarregando] = useState(true);
+    const [tipoUsuario, setTipoUsuario] = useState("");
+
 
   useEffect(() => {
     const fetchRecompensas = async () => {
@@ -35,8 +39,47 @@ function ListarRecompensas() {
     };
 
     fetchRecompensas();
-  }, [])  ;
+  }, [tipoUsuario]);
 
+  const verificarEmail = async (email) => {
+    const docRefAdministrador = doc(db, "Administradores", email); // Buscando pelo email do usuário na coleção Administradores
+    const docSnapAdministrador = await getDoc(docRefAdministrador); // Obtém os dados do documento dos Administradores
+
+    const docRefEmpresa = doc(db, "Empresa", email); // Buscando pelo email do usuário na coleção Empresa
+    const docSnapEmpresa = await getDoc(docRefEmpresa); // Obtém os dados do documento da Empresa
+
+    if (docSnapAdministrador.exists()) {
+      console.log("Dados encontrados:", docSnapAdministrador.data());
+      setTipoUsuario("Administrador"); // Se encontrado na coleção Administradores, define como "Administrador"
+      return;
+    }
+
+    if (docSnapEmpresa.exists()) {
+      console.log("Dados encontrados:", docSnapEmpresa.data());
+      setTipoUsuario("Empresa"); // Se encontrado na coleção Empresa, define como "Empresa"
+      return;
+    }
+
+    console.log("Tipo de usuário:", tipoUsuario);
+    setTipoUsuario("Indefinido"); // Caso não encontre nenhum dos dois, define como "Indefinido"
+  };
+
+  // Função para pegar o usuário logado
+  useEffect(() => {
+    const auth = getAuth();
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // O usuário está logado
+        console.log("Usuário logado:", user.email);
+        if (user.email) {
+          await verificarEmail(user.email); // Chama a função para verificar o tipo
+        }
+      } else {
+        // Nenhum usuário logado
+        console.log("Nenhum usuário logado.");
+      }
+    });
+  }, []); // Use apenas uma vez ao carregar o componente
   // Função para aceitar uma recompensa
   const handleAceitar = async (id) => {
     try {
@@ -68,9 +111,7 @@ function ListarRecompensas() {
   return (
     <div className={style.container}>
       <h2>Lista de Recompensas Não Aprovadas</h2>
-      {recompensas.length === 0 ? (
-        <p>Nenhuma recompensa pendente.</p>
-      ) : (
+      {recompensas.length != 0 && tipoUsuario === "Administrador" ? (
         <ul className={style.listaRecompensas}>
           {recompensas.map((recompensa) => (
             <li key={recompensa.id} className={style.itemRecompensa}>
@@ -92,13 +133,13 @@ function ListarRecompensas() {
               </p>
               <div className={style.botoes}>
                 <button
-                  className={style.botaoAceitar}
+                  className={style.btnRecusar}
                   onClick={() => handleAceitar(recompensa.id)}
                 >
                   Aceitar
                 </button>
                 <button
-                  className={style.botaoRecusar}
+                  className={style.btnAprovar}
                   onClick={() => handleRecusar(recompensa.id)}
                 >
                   Recusar
@@ -107,6 +148,8 @@ function ListarRecompensas() {
             </li>
           ))}
         </ul>
+      ) : (
+        <p>Nenhuma recompensa pendente.</p>
       )}
     </div>
   );

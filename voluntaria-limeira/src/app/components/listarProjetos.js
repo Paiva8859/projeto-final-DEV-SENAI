@@ -2,6 +2,7 @@ import { db } from "../SDK_FIREBASE"; // Configuração do Firebase
 import {
   collection,
   getDocs,
+  getDoc,
   doc,
   updateDoc,
   deleteDoc,
@@ -18,7 +19,6 @@ function ListarProjetos() {
 
   useEffect(() => {
     const fetchProjetos = async () => {
-      pegarUsuarioLogado();
       try {
         const usuariosRef = collection(db, "Usuarios"); // Referência à coleção de usuários
         const usuariosSnapshot = await getDocs(usuariosRef); // Busca todos os usuários
@@ -51,38 +51,46 @@ function ListarProjetos() {
     };
 
     fetchProjetos();
-  }, []);
-const verificarEmailAdmin = async (email)=> {
-  const docRef = doc(db, "Administradores", email); // Buscando pelo email do usuário autenticado
-  const docSnap = await getDoc(docRef); // Obtém os dados do documento
+  }, [tipoUsuario]);
+  const verificarEmail = async (email) => {
+    const docRefAdministrador = doc(db, "Administradores", email); // Buscando pelo email do usuário na coleção Administradores
+    const docSnapAdministrador = await getDoc(docRefAdministrador); // Obtém os dados do documento dos Administradores
 
-  if (docSnap.exists()) {
-    console.log("Dados encontrados:", docSnap.data());
-    return true; // Email encontrado no Firestore como administrador
-  } else {
-    console.error("Nenhum dado foi encontrado.");
-    return false; // Não encontrado como administrador
-  }
-}
+    const docRefEmpresa = doc(db, "Empresa", email); // Buscando pelo email do usuário na coleção Empresa
+    const docSnapEmpresa = await getDoc(docRefEmpresa); // Obtém os dados do documento da Empresa
+
+    if (docSnapAdministrador.exists()) {
+      console.log("Dados encontrados:", docSnapAdministrador.data());
+      setTipoUsuario("Administrador"); // Se encontrado na coleção Administradores, define como "Administrador"
+      return;
+    }
+
+    if (docSnapEmpresa.exists()) {
+      console.log("Dados encontrados:", docSnapEmpresa.data());
+      setTipoUsuario("Empresa"); // Se encontrado na coleção Empresa, define como "Empresa"
+      return;
+    }
+
+    console.log("Tipo de usuário:", tipoUsuario);
+    setTipoUsuario("Indefinido"); // Caso não encontre nenhum dos dois, define como "Indefinido"
+  };
+
   // Função para pegar o usuário logado
-  function pegarUsuarioLogado() {
+  useEffect(() => {
     const auth = getAuth();
-
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
         // O usuário está logado
-        console.log("Usuário logado: ", user.email);
+        console.log("Usuário logado:", user.email);
         if (user.email) {
-          
+          await verificarEmail(user.email); // Chama a função para verificar o tipo
         }
-        setTipoUsuario()
-        // Aqui você pode pegar outras informações, como user.uid, user.displayName, etc.
       } else {
         // Nenhum usuário logado
         console.log("Nenhum usuário logado.");
       }
     });
-  }
+  }, []); // Use apenas uma vez ao carregar o componente
 
   const aceitarProjeto = async (id) => {
     try {
@@ -158,7 +166,7 @@ const verificarEmailAdmin = async (email)=> {
                   </p>
                   <div className={style.infoUsuario}>
                     <p>
-                      <strong>Usuário:</strong> {projeto.usuario.email}{" "}
+                      <strong>Usuário:</strong> {projeto.usuario.email}
                       <button
                         title={mensagem}
                         onClick={() => copiarTexto(projeto.usuario.email)}
@@ -169,6 +177,13 @@ const verificarEmailAdmin = async (email)=> {
                     </p>
                     <p>
                       <strong>Telefone:</strong> {projeto.usuario.telefone}
+                      <button
+                        title={mensagem}
+                        onClick={() => copiarTexto(projeto.usuario.email)}
+                        className={style.btnCopiar}
+                      >
+                        <img src="/copiar.png" />
+                      </button>
                     </p>
                   </div>
                   <div>
@@ -182,22 +197,22 @@ const verificarEmailAdmin = async (email)=> {
                       </p>
                     )}
                   </div>
-                  {/* {tipoUsuario === "adm" && ( // Exibe botões apenas se o usuário for administrador */}
-                  <div className={style.acoes}>
-                    <button
-                      className={style.btnRecusar}
-                      onClick={() => reprovarProjeto(projeto.id)}
-                    >
-                      Recusar
-                    </button>
-                    <button
-                      className={style.btnAprovar}
-                      onClick={() => aceitarProjeto(projeto.id)}
-                    >
-                      Aceitar
-                    </button>
-                  </div>
-                  {/* )} */}
+                  {tipoUsuario === "Administrador" && ( // Exibe botões apenas se o usuário for administrador
+                    <div className={style.acoes}>
+                      <button
+                        className={style.btnRecusar}
+                        onClick={() => reprovarProjeto(projeto.id)}
+                      >
+                        Recusar
+                      </button>
+                      <button
+                        className={style.btnAprovar}
+                        onClick={() => aceitarProjeto(projeto.id)}
+                      >
+                        Aceitar
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </li>
