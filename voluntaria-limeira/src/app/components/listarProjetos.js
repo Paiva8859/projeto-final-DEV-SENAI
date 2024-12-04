@@ -2,20 +2,19 @@ import { db } from "../SDK_FIREBASE"; // Configuração do Firebase
 import {
   collection,
   getDocs,
-  getDoc,
   doc,
   updateDoc,
   deleteDoc,
 } from "firebase/firestore"; // Métodos do Firestore
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 import React, { useEffect, useState } from "react";
 import style from "@/app/style/listarProjetos.module.css"; // Estilo CSS
+import { useAuth } from "../service/authContext"; // Contexto de autenticação
 
 function ListarProjetos() {
   const [projetos, setProjetos] = useState([]); // Estado para armazenar os projetos
   const [carregando, setCarregando] = useState(true); // Estado para controle do carregamento
   const [mensagem, setMensagem] = useState("");
-  const [tipoUsuario, setTipoUsuario] = useState("");
+  const { tipoUsuario } = useAuth() || {};
 
   useEffect(() => {
     const fetchProjetos = async () => {
@@ -32,6 +31,7 @@ function ListarProjetos() {
           ); // Referência à subcoleção `Projetos`
           const projetosSnapshot = await getDocs(projetosRef);
 
+          // Mapeia os projetos dessa subcoleção e adiciona na lista geral
           todosProjetos = [
             ...todosProjetos,
             ...projetosSnapshot.docs.map((projetoDoc) => ({
@@ -51,46 +51,7 @@ function ListarProjetos() {
     };
 
     fetchProjetos();
-  }, [tipoUsuario]);
-  const verificarEmail = async (email) => {
-    const docRefAdministrador = doc(db, "Administradores", email); // Buscando pelo email do usuário na coleção Administradores
-    const docSnapAdministrador = await getDoc(docRefAdministrador); // Obtém os dados do documento dos Administradores
-
-    const docRefEmpresa = doc(db, "Empresa", email); // Buscando pelo email do usuário na coleção Empresa
-    const docSnapEmpresa = await getDoc(docRefEmpresa); // Obtém os dados do documento da Empresa
-
-    if (docSnapAdministrador.exists()) {
-      console.log("Dados encontrados:", docSnapAdministrador.data());
-      setTipoUsuario("Administrador"); // Se encontrado na coleção Administradores, define como "Administrador"
-      return;
-    }
-
-    if (docSnapEmpresa.exists()) {
-      console.log("Dados encontrados:", docSnapEmpresa.data());
-      setTipoUsuario("Empresa"); // Se encontrado na coleção Empresa, define como "Empresa"
-      return;
-    }
-
-    console.log("Tipo de usuário:", tipoUsuario);
-    setTipoUsuario("Indefinido"); // Caso não encontre nenhum dos dois, define como "Indefinido"
-  };
-
-  // Função para pegar o usuário logado
-  useEffect(() => {
-    const auth = getAuth();
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        // O usuário está logado
-        console.log("Usuário logado:", user.email);
-        if (user.email) {
-          await verificarEmail(user.email); // Chama a função para verificar o tipo
-        }
-      } else {
-        // Nenhum usuário logado
-        console.log("Nenhum usuário logado.");
-      }
-    });
-  }, []); // Use apenas uma vez ao carregar o componente
+  }, []);
 
   const aceitarProjeto = async (id) => {
     try {
@@ -99,11 +60,13 @@ function ListarProjetos() {
       const valor = prompt("Digite o valor que os usuários vão receber");
       if (!valor) return;
 
+      // Atualiza o projeto no Firestore
       await updateDoc(projetoRef, {
         verificado: true,
-        recompensa: Number(valor),
+        recompensa: Number(valor), // Atualiza os campos necessários
       });
 
+      // Atualiza o estado local
       setProjetos((prevProjetos) =>
         prevProjetos.filter((projeto) => projeto.id !== id)
       );
@@ -118,8 +81,9 @@ function ListarProjetos() {
     try {
       const projeto = projetos.find((p) => p.id === id);
       const projetoRef = doc(db, `Usuarios/${projeto.usuario.id}/Projetos`, id);
-      await deleteDoc(projetoRef);
+      await deleteDoc(projetoRef); // Exclui o projeto do Firestore
 
+      // Atualiza o estado local
       setProjetos((prevProjetos) =>
         prevProjetos.filter((projeto) => projeto.id !== id)
       );
@@ -146,6 +110,7 @@ function ListarProjetos() {
 
   return (
     <div className={style.container}>
+      <h2>Lista de Projetos Não Aprovados</h2>
       {projetos.length === 0 ? (
         <p>Nenhum projeto encontrado.</p>
       ) : (
@@ -157,8 +122,8 @@ function ListarProjetos() {
                   <img src="/logo.png" alt="Imagem do Projeto" />
                 </div>
                 <div className={style.informacoes}>
-                  <h3>{projeto.nome}</h3>
-                  <p>
+                  <h4>{projeto.nome}</h4>
+                  <p style={{ height: '30%', width: '80%', marginTop: '10px' }}>
                     <strong>Descrição:</strong> {projeto.descricao}
                   </p>
                   <p>
@@ -166,27 +131,25 @@ function ListarProjetos() {
                   </p>
                   <div className={style.infoUsuario}>
                     <p>
-                      <strong>Usuário:</strong> {projeto.usuario.email}
-                      <button
-                        title={mensagem}
+                      <strong>Usuário:</strong> {projeto.usuario.email}{" "}
+                      <button title={mensagem}
                         onClick={() => copiarTexto(projeto.usuario.email)}
                         className={style.btnCopiar}
                       >
-                        <img src="/copiar.png" />
+                        <img style={{ height: '10px' }} src="/copiar.png" />
                       </button>
                     </p>
                     <p>
                       <strong>Telefone:</strong> {projeto.usuario.telefone}
-                      <button
-                        title={mensagem}
-                        onClick={() => copiarTexto(projeto.usuario.email)}
+                      <button title={mensagem}
+                        onClick={() => copiarTexto(projeto.usuario.telefone)}
                         className={style.btnCopiar}
                       >
-                        <img src="/copiar.png" />
+                        <img style={{ height: '10px' }} src="/copiar.png" />
                       </button>
                     </p>
                   </div>
-                  <div>
+                  <div className={style.verificar}>
                     {projeto.vaquinha ? (
                       <p>
                         <strong>R$:</strong> {projeto.localOuValor}
@@ -196,23 +159,21 @@ function ListarProjetos() {
                         <strong>Local:</strong> {projeto.localOuValor}
                       </p>
                     )}
-                  </div>
-                  {tipoUsuario === "Administrador" && ( // Exibe botões apenas se o usuário for administrador
                     <div className={style.acoes}>
                       <button
-                        className={style.btnRecusar}
+                        className={`${style.btnRecusar} ${style.btnVerificar}`}
                         onClick={() => reprovarProjeto(projeto.id)}
                       >
-                        Recusar
+                        x
                       </button>
                       <button
-                        className={style.btnAprovar}
+                        className={`${style.btnAprovar} ${style.btnVerificar}`}
                         onClick={() => aceitarProjeto(projeto.id)}
                       >
-                        Aceitar
+                        ✓
                       </button>
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
             </li>

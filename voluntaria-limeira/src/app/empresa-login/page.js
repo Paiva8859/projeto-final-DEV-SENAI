@@ -24,7 +24,7 @@ function EmpresaLogin() {
       router.push("/");
     } catch (err) {
       setMensagem(
-        "Houve um erro ao fazer o login, verifique suas credenciais."
+        "Houve um erro ao fazer o login, verifique suas credenciais. Se você já criou sua conta, pode ser que um administrador ainda não a tenha verificado, se for o caso, tente novamente mais tarde."
       );
       console.error(`Houve um erro ao fazer o login ${err}`);
     }

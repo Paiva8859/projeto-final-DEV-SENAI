@@ -46,27 +46,5 @@ async function cadastroRecompensa( titulo, descricao, inicio, termino, quantidad
   }
 }
 
-
-
-// async function verificarRecompensasExpiradas() {
-//   try {
-//     const colecaoRecompensas = collection(db, "Recompensas");
-//     const snapshot = await getDocs(colecaoRecompensas);
-
-//     snapshot.forEach(async (documento) => {
-//       const dados = documento.data();
-
-//       if (dados.dataExpiracao && dados.dataExpiracao.toDate() > new Date()) {
-//         await deleteDoc(documento.ref);
-//         console.log(`Recompensa ${documento.id} deletada por expiração.`);
-//       }
-//     });
-//   } catch (err) {
-//     console.error("Erro ao verificar recompensas expiradas: ", err);
-//     throw err;
-//   }
-// }
-
-
 export { cadastroRecompensa };
 

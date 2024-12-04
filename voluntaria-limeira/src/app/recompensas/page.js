@@ -1,17 +1,15 @@
 "use client";
-import style from "@/app/style/cadastroRecompensa.module.css";
 import { useState } from "react";
 import {
-  cadastroRecompensa,
-  verificarRecompensasExpiradas,
+  cadastroRecompensa
 } from "../service/cadastroRecompensa";
+import style from "@/app/style/recompensa.module.css";
 
 function Recompensas() {
   const [titulo, setTitulo] = useState("");
   const [descricao, setDescricao] = useState("");
   const [inicio, setInicio] = useState("");
   const [termino, setTermino] = useState("");
-
   const criarNova = async (e) => {
     e.preventDefault();
 

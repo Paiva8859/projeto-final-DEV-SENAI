@@ -29,11 +29,13 @@ function EmpresaCadastro() {
   return (
     <>
       <Header />
+
       <div className={style.container}>
         <div className={style.containerFormulario}>
           <div className={style.login}>
             <p>Já criou sua conta?</p>
             <button className={style.btnLogin}>Entrar</button>
+          <p style={{fontSize:'10px', textAlign:'center'}} className={style.mensagem} >{mensagem}</p>
           </div>
           <form className={style.formulario} onSubmit={enviarDados}>
             <div className={style.inputCadastro}>

@@ -1,0 +1,106 @@
+.container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffffff;
+  }
+  
+  .titulo {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .listaEmpresa {
+    width: 100%;
+    max-width: 600px; /* Tamanho máximo da lista de empresas */
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .itemEmpresa {
+    background-color: #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    padding: 15px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    width: 100%; /* Faz o card ocupar a largura total disponível */
+    max-width: 500px; /* Limita o tamanho máximo do card */
+    margin: 0 auto; /* Centraliza os cards */
+  }
+  
+  .itemEmpresa:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+  }
+  
+  .headerItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .nomeEmpresa {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .informacoesEmpresa {
+    margin: 10px 0;
+  }
+  
+  .informacoesEmpresa p {
+    font-size: 1rem;
+    color: #666;
+  }
+  
+  .botoes {
+    display: flex;
+    gap: 15px;
+    justify-content: center; /* Centraliza os botões */
+  }
+  
+  .btnAprovar, .btnRecusar{
+    color: var(--branco);
+    font-weight: bold;
+    
+    border-radius: 50%;
+    border: none;
+  }
+  .btnAprovar {
+    background-color: var(--laranja-escuro);
+  }
+  
+  .btnRecusar {
+    background-color: var(--cinza-escuro);
+  }
+  
+  .btnAprovar:hover {
+    transform: translateY(-1px);
+  }
+  
+  .btnRecusar:hover {
+    transform: translateY(-1px);
+  }
+  
+  .btnAprovar:active, .btnRecusar:active {
+    transform: scale(0.98);
+  }
+  
+  .notFound {
+    font-size: 1.2rem;
+    color: #888;
+    text-align: center;
+    margin-top: 40px;
+  }
+  
